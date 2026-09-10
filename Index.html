@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SchnaFin</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4fff8;
+      color: #173b2a;
+      text-align: center;
+    }
+
+    .app {
+      max-width: 500px;
+      min-height: 100vh;
+      margin: auto;
+      padding: 35px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 42px;
+      font-weight: 800;
+      margin-top: 35px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      margin-bottom: 55px;
+    }
+
+    .camera {
+      width: 190px;
+      height: 190px;
+      border-radius: 35px;
+      background: white;
+      border: 4px solid #2f9e62;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 75px;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 10px 0;
+    }
+
+    p {
+      font-size: 17px;
+      line-height: 1.5;
+      color: #50705e;
+      margin-bottom: 35px;
+    }
+
+    .button {
+      background: #2f9e62;
+      color: white;
+      border: none;
+      padding: 18px 35px;
+      border-radius: 18px;
+      font-size: 19px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      opacity: 0.9;
+    }
+
+    input {
+      display: none;
+    }
+
+    #preview {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 20px;
+      margin-top: 25px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <div class="logo">SchnaFin</div>
+
+    <div class="subtitle">
+      Was ist dein Artikel wirklich wert?
+    </div>
+
+    <div class="camera">📷</div>
+
+    <h1>Artikel fotografieren</h1>
+
+    <p>
+      Mach ein Foto von deinem Artikel und
+      SchnaFin hilft dir dabei, einen fairen Preis einzuschätzen.
+    </p>
+
+    <label class="button">
+      📸 Foto aufnehmen
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onchange="showImage(event)"
+      >
+    </label>
+
+    <img id="preview">
+
+  </div>
+
+  <script>
+    function showImage(event) {
+      const file = event.target.files[0];
+
+      if (file) {
+        const preview = document.getElementById("preview");
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+      }
+    }
+  </script>
+
+</body>
+</html>
