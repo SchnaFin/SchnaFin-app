@@ -67,13 +67,38 @@ button{border:0;cursor:pointer}
 </div>
 
 <script>
+let model;
+
+async function ladeKI() {
+  model = await mobilenet.load();
+}
+
+ladeKI();
+
 const foto=document.getElementById("foto");
 
-foto.onchange=function(){
-if(!foto.files[0])return;
-document.getElementById("preview").src=URL.createObjectURL(foto.files[0]);
-document.getElementById("preview").style.display="block";
-document.getElementById("analyse").style.display="block";
+foto.onchange = async function() {
+
+  if (!foto.files[0]) return;
+
+  const bild = document.getElementById("preview");
+
+  bild.src = URL.createObjectURL(foto.files[0]);
+  bild.style.display = "block";
+
+  document.getElementById("analyse").style.display = "block";
+
+  if (!model) {
+    model = await mobilenet.load();
+  }
+
+  const ergebnis = await model.classify(bild);
+
+  const erkannt = ergebnis[0].className;
+
+  document.getElementById("artikel").value = erkannt;
+
+  preisBerechnen();
 };
 
 function preisBerechnen(){
