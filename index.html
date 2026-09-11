@@ -119,35 +119,63 @@ input[type="file"]{
 <div class="container">
 
   <div class="box">
+
     <h1>📸 Artikel fotografieren</h1>
 
     <p>
-      Fotografiere einen Gegenstand und SchnaFin versucht,
-      ihn automatisch zu erkennen.
+      Fotografiere einen Gegenstand oder füge ein Bild hinzu.
+      SchnaFin versucht anschließend, den Artikel automatisch zu erkennen.
     </p>
+
+    <!-- FOTO AUFNEHMEN -->
 
     <label class="upload">
       📷 Foto aufnehmen
-      <input type="file" id="foto" accept="image/*" capture="environment">
+      <input
+        type="file"
+        id="foto"
+        accept="image/*"
+        capture="environment">
+    </label>
+
+    <!-- DATEI HINZUFÜGEN -->
+
+    <label
+      class="upload"
+      style="margin-top:12px;background:#ffffff;color:#20844a;border:2px solid #20844a;">
+
+      📁 Datei hinzufügen
+
+      <input
+        type="file"
+        id="datei"
+        accept="image/*">
+
     </label>
 
     <img id="preview">
+
   </div>
-<label class="upload" style="margin-top:12px;background:#ffffff;color:#20844a;border:2px solid #20844a;">
-  📁 Datei hinzufügen
-  <input type="file" id="datei" accept="image/*">
-</label>
+
+
+  <!-- ANALYSE -->
+
   <div id="analyse">
 
     <div class="box">
+
       <h2>🤖 SchnaFin analysiert</h2>
 
       <p id="status" class="status">
         Das Foto wird automatisch analysiert …
       </p>
+
     </div>
 
-    <div class="box" id="resultat">
+
+    <!-- ERGEBNIS -->
+
+    <div class="box">
 
       <h2>🔎 Ergebnis</h2>
 
@@ -168,8 +196,9 @@ input[type="file"]{
       </div>
 
       <div class="hinweis">
-        ⚠️ Erste Orientierung. Für eine echte Bewertung brauchen wir
-        im nächsten Schritt Modell, Zustand und aktuelle Vergleichsangebote.
+        ⚠️ Erste Orientierung.
+        Für eine echte Bewertung brauchen wir im nächsten Schritt
+        Modell, Zustand und aktuelle Vergleichsangebote.
       </div>
 
     </div>
@@ -178,9 +207,15 @@ input[type="file"]{
 
 </div>
 
+
 <script>
 
 let model;
+
+
+/* =========================
+   KI LADEN
+========================= */
 
 async function ladeKI(){
 
@@ -190,23 +225,25 @@ async function ladeKI(){
   model = await mobilenet.load();
 
   document.getElementById("status").innerText =
-    "Bereit – Foto aufnehmen!";
+    "Bereit – Foto aufnehmen oder Datei hinzufügen!";
 
 }
 
 ladeKI();
 
 
-const foto = document.getElementById("foto");
+/* =========================
+   FOTO VERARBEITEN
+========================= */
 
+async function analysiereDatei(datei){
 
-foto.onchange = async function(){
-
-  if(!foto.files[0]) return;
+  if(!datei) return;
 
   const bild = document.getElementById("preview");
 
-  bild.src = URL.createObjectURL(foto.files[0]);
+  bild.src = URL.createObjectURL(datei);
+
   bild.style.display = "block";
 
   document.getElementById("analyse").style.display = "block";
@@ -216,18 +253,20 @@ foto.onchange = async function(){
 
 
   if(!model){
+
     model = await mobilenet.load();
+
   }
 
 
-  /*
-    Warten, bis das Bild vollständig geladen ist.
-  */
-
   if(!bild.complete){
+
     await new Promise(resolve => {
+
       bild.onload = resolve;
+
     });
+
   }
 
 
@@ -235,27 +274,63 @@ foto.onchange = async function(){
 
   const erkannt = ergebnis[0].className;
 
+
   document.getElementById("status").innerText =
     "Erkannt: " + erkannt;
 
 
   preisBerechnen(erkannt);
 
+}
+
+
+/* =========================
+   KAMERA
+========================= */
+
+document.getElementById("foto").onchange = function(){
+
+  if(this.files[0]){
+
+    analysiereDatei(this.files[0]);
+
+  }
+
 };
 
+
+/* =========================
+   DATEI AUS GALERIE
+========================= */
+
+document.getElementById("datei").onchange = function(){
+
+  if(this.files[0]){
+
+    analysiereDatei(this.files[0]);
+
+  }
+
+};
+
+
+/* =========================
+   PREISBERECHNUNG
+========================= */
 
 function preisBerechnen(artikelName){
 
   let artikel = artikelName.toLowerCase();
 
   let kategorie = "Artikel";
+
   let preis = "Noch keine Einschätzung";
-  let text = "Für diesen Artikel haben wir noch keine Vergleichsdaten.";
+
+  let text =
+    "Für diesen Artikel haben wir noch keine Vergleichsdaten.";
 
 
-  /*
-    LAPTOP / NOTEBOOK
-  */
+  /* LAPTOP / NOTEBOOK */
 
   if(
     artikel.includes("notebook") ||
@@ -269,14 +344,13 @@ function preisBerechnen(artikelName){
 
     text =
       "Grobe erste Orientierung für gebrauchte Laptops. " +
-      "Der tatsächliche Wert hängt stark von Marke, Modell, Baujahr, " +
-      "Prozessor, RAM, Speicher und Zustand ab.";
+      "Der tatsächliche Wert hängt stark von Marke, Modell, " +
+      "Baujahr, Prozessor, RAM, Speicher und Zustand ab.";
+
   }
 
 
-  /*
-    SMARTPHONE
-  */
+  /* SMARTPHONE */
 
   else if(
     artikel.includes("cellular") ||
@@ -291,14 +365,13 @@ function preisBerechnen(artikelName){
     preis = "ca. 150–500 €";
 
     text =
-      "Grobe erste Orientierung. Modell, Speicher, Akku und Zustand " +
-      "können den Wert deutlich verändern.";
+      "Grobe erste Orientierung. Modell, Speicher, Akku " +
+      "und Zustand können den Wert deutlich verändern.";
+
   }
 
 
-  /*
-    KAMERA
-  */
+  /* KAMERA */
 
   else if(
     artikel.includes("camera") ||
@@ -312,12 +385,11 @@ function preisBerechnen(artikelName){
     text =
       "Grobe Orientierung für gebrauchte Kameras. " +
       "Marke, Modell und Objektiv sind besonders wichtig.";
+
   }
 
 
-  /*
-    STAUBSAUGER
-  */
+  /* STAUBSAUGER */
 
   else if(
     artikel.includes("vacuum") ||
@@ -329,14 +401,13 @@ function preisBerechnen(artikelName){
     preis = "ca. 30–150 €";
 
     text =
-      "Grobe Orientierung. Marke, Modell, Zubehör und Zustand " +
-      "beeinflussen den Verkaufspreis.";
+      "Grobe Orientierung. Marke, Modell, Zubehör " +
+      "und Zustand beeinflussen den Verkaufspreis.";
+
   }
 
 
-  /*
-    AKKUSCHRAUBER / BOHRMASCHINE
-  */
+  /* AKKUSCHRAUBER / BOHRMASCHINE */
 
   else if(
     artikel.includes("drill") ||
@@ -349,14 +420,13 @@ function preisBerechnen(artikelName){
     preis = "ca. 40–120 €";
 
     text =
-      "Grobe Orientierung. Hersteller, Akkus, Ladegerät und Zustand " +
-      "sind für den Wert entscheidend.";
+      "Grobe Orientierung. Hersteller, Akkus, Ladegerät " +
+      "und Zustand sind für den Wert entscheidend.";
+
   }
 
 
-  /*
-    SPIELEKONSOLE
-  */
+  /* SPIELEKONSOLE */
 
   else if(
     artikel.includes("game console") ||
@@ -369,10 +439,13 @@ function preisBerechnen(artikelName){
     preis = "ca. 100–450 €";
 
     text =
-      "Grobe Orientierung. Modell, Speicher, Controller, Spiele " +
-      "und Zustand können den Preis stark verändern.";
+      "Grobe Orientierung. Modell, Speicher, Controller, " +
+      "Spiele und Zustand können den Preis stark verändern.";
+
   }
 
+
+  /* ERGEBNIS ANZEIGEN */
 
   document.getElementById("kategorie").innerText =
     kategorie;
