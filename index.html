@@ -1,143 +1,104 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SchnaFin</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4fff8;
-      color: #173b2a;
-      text-align: center;
-    }
-
-    .app {
-      max-width: 500px;
-      min-height: 100vh;
-      margin: auto;
-      padding: 35px 22px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .logo {
-      font-size: 42px;
-      font-weight: 800;
-      margin-top: 35px;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      font-size: 18px;
-      margin-bottom: 55px;
-    }
-
-    .camera {
-      width: 190px;
-      height: 190px;
-      border-radius: 35px;
-      background: white;
-      border: 4px solid #2f9e62;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 75px;
-      margin-bottom: 25px;
-    }
-
-    h1 {
-      font-size: 28px;
-      margin: 10px 0;
-    }
-
-    p {
-      font-size: 17px;
-      line-height: 1.5;
-      color: #50705e;
-      margin-bottom: 35px;
-    }
-
-    .button {
-      background: #2f9e62;
-      color: white;
-      border: none;
-      padding: 18px 35px;
-      border-radius: 18px;
-      font-size: 19px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .button:hover {
-      opacity: 0.9;
-    }
-
-    input {
-      display: none;
-    }
-
-    #preview {
-      max-width: 100%;
-      max-height: 300px;
-      border-radius: 20px;
-      margin-top: 25px;
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SchnaFin</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f4fff8;color:#173b2a;text-align:center}
+.app{max-width:500px;margin:auto;padding:35px 22px}
+.logo{font-size:42px;font-weight:800;margin:25px 0 8px}
+.subtitle{font-size:18px;margin-bottom:40px}
+.camera{width:190px;height:190px;margin:auto;border:4px solid #2f9e62;border-radius:35px;background:white;display:flex;align-items:center;justify-content:center;font-size:75px}
+h1{font-size:28px;margin:25px 0 10px}
+p{font-size:17px;line-height:1.5;color:#50705e}
+.button{display:inline-block;margin-top:15px;padding:18px 30px;background:#2f9e62;color:white;border-radius:18px;font-size:19px;font-weight:bold}
+input{display:none}
+#preview{display:none;width:100%;max-height:300px;object-fit:contain;margin-top:25px;border-radius:20px}
+#analyse{display:none;margin-top:25px}
+.box{background:white;border-radius:20px;padding:22px;margin-top:20px}
+.text{width:100%;padding:15px;border:2px solid #cde8d8;border-radius:14px;font-size:17px}
+button{border:0;cursor:pointer}
+.result{display:none;margin-top:20px;background:#173b2a;color:white;border-radius:20px;padding:25px}
+.price{font-size:38px;font-weight:bold;margin:10px}
+</style>
 </head>
 
 <body>
+<div class="app">
 
-  <div class="app">
+<div class="logo">SchnaFin</div>
+<div class="subtitle">Was ist dein Artikel wirklich wert?</div>
 
-    <div class="logo">SchnaFin</div>
+<div class="camera">📷</div>
 
-    <div class="subtitle">
-      Was ist dein Artikel wirklich wert?
-    </div>
+<h1>Artikel fotografieren</h1>
+<p>Fotografiere deinen Artikel und SchnaFin hilft dir, einen fairen Preis einzuschätzen.</p>
 
-    <div class="camera">📷</div>
+<label class="button">
+📸 Foto aufnehmen
+<input id="foto" type="file" accept="image/*" capture="environment">
+</label>
 
-    <h1>Artikel fotografieren</h1>
+<img id="preview">
 
-    <p>
-      Mach ein Foto von deinem Artikel und
-      SchnaFin hilft dir dabei, einen fairen Preis einzuschätzen.
-    </p>
+<div id="analyse">
+<div class="box">
+<h2>🔎 Artikel erkennen</h2>
+<p>Was ist das für ein Artikel? Schreib z.B. „PS5 Slim“ oder „Bosch Akkuschrauber“.</p>
 
-    <label class="button">
-      📸 Foto aufnehmen
-      <input
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onchange="showImage(event)"
-      >
-    </label>
+<input class="text" id="artikel" type="text" placeholder="Artikelname">
 
-    <img id="preview">
+<button class="button" onclick="preisBerechnen()">💰 Preis einschätzen</button>
+</div>
 
-  </div>
+<div class="result" id="result">
+<div>SchnaFin-Einschätzung</div>
+<div class="price" id="preis"></div>
+<div id="beschreibung"></div>
+</div>
+</div>
 
-  <script>
-    function showImage(event) {
-      const file = event.target.files[0];
+</div>
 
-      if (file) {
-        const preview = document.getElementById("preview");
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = "block";
-      }
-    }
-  </script>
+<script>
+const foto=document.getElementById("foto");
+
+foto.onchange=function(){
+if(!foto.files[0])return;
+document.getElementById("preview").src=URL.createObjectURL(foto.files[0]);
+document.getElementById("preview").style.display="block";
+document.getElementById("analyse").style.display="block";
+};
+
+function preisBerechnen(){
+
+let artikel=document.getElementById("artikel").value.toLowerCase();
+
+let preis="Noch keine Einschätzung";
+let text="Für diesen Artikel haben wir noch keine Vergleichsdaten.";
+
+if(artikel.includes("ps5")){
+preis="ca. 350–450 €";
+text="Abhängig von Modell, Speicher, Zustand und Zubehör.";
+}
+
+else if(artikel.includes("bosch") && artikel.includes("akk")){
+preis="ca. 50–100 €";
+text="Abhängig von Modell, Akku, Ladegerät und Zustand.";
+}
+
+else if(artikel.includes("iphone")){
+preis="ca. 300–700 €";
+text="Abhängig von Modell, Speicher und Zustand.";
+}
+
+document.getElementById("preis").innerText=preis;
+document.getElementById("beschreibung").innerText=text;
+document.getElementById("result").style.display="block";
+}
+</script>
 
 </body>
 </html>
