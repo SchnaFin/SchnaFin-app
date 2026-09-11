@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>SchnaFin</title>
 
 <style>
-
 body{
   margin:0;
   font-family:Arial,sans-serif;
@@ -17,7 +15,7 @@ body{
 }
 
 header{
-  background:#ffffff;
+  background:#fff;
   padding:20px;
   text-align:center;
   border-bottom:1px solid #ddd;
@@ -32,15 +30,15 @@ header{
 .container{
   max-width:600px;
   margin:auto;
-  padding:25px 18px;
+  padding:20px 18px 40px;
 }
 
 .box{
-  background:white;
+  background:#fff;
   border-radius:18px;
   padding:22px;
   margin-top:20px;
-  box-shadow:0 4px 15px rgba(0,0,0,0.08);
+  box-shadow:0 4px 15px rgba(0,0,0,.08);
 }
 
 h1,h2{
@@ -50,16 +48,23 @@ h1,h2{
 .upload{
   display:block;
   background:#20844a;
-  color:white;
+  color:#fff;
   text-align:center;
   padding:16px;
   border-radius:14px;
   font-size:18px;
   font-weight:bold;
   cursor:pointer;
+  margin-top:12px;
 }
 
-input[type="file"]{
+.upload.secondary{
+  background:#fff;
+  color:#20844a;
+  border:2px solid #20844a;
+}
+
+input[type=file]{
   display:none;
 }
 
@@ -82,10 +87,6 @@ input[type="file"]{
   display:none;
 }
 
-#analyse{
-  display:none;
-}
-
 .status{
   font-size:18px;
   font-weight:bold;
@@ -98,20 +99,25 @@ input[type="file"]{
   margin-top:15px;
 }
 
+.kategorie{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.modell{
+  font-size:19px;
+  margin-top:8px;
+}
+
 .preis{
   font-size:30px;
   font-weight:bold;
   color:#20844a;
-  margin-top:8px;
-}
-
-.kategorie{
-  font-size:20px;
-  font-weight:bold;
+  margin-top:15px;
 }
 
 .bewertung{
-  font-size:30px;
+  font-size:28px;
   font-weight:bold;
   margin-top:20px;
 }
@@ -128,20 +134,10 @@ input[type="file"]{
   color:#c62828;
 }
 
-.ocr{
-  margin-top:18px;
-  padding:15px;
-  background:#f7f7f7;
-  border-radius:12px;
-}
-
-.ocr-title{
-  font-weight:bold;
-  margin-bottom:8px;
-}
-
-#ocrText{
-  white-space:pre-line;
+.details{
+  margin-top:15px;
+  font-size:15px;
+  color:#555;
 }
 
 .fragen{
@@ -149,679 +145,215 @@ input[type="file"]{
 }
 
 .frage{
-  background:#ffffff;
+  background:#fff;
   border-left:5px solid #20844a;
   padding:13px;
   margin-top:10px;
   border-radius:10px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.05);
 }
 
 .hinweis{
   font-size:13px;
   color:#666;
   margin-top:15px;
+  line-height:1.5;
+}
+
+.laden{
+  display:none;
+  text-align:center;
+  padding:15px;
+  font-weight:bold;
+}
+
+button{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:15px;
+  font-size:18px;
+  font-weight:bold;
+  background:#20844a;
+  color:#fff;
+  margin-top:12px;
 }
 
 </style>
-
-
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
 </head>
-
 
 <body>
 
-
 <header>
-
-<div class="logo">
-SchnaFin
-</div>
-
-<div>
-Was ist das wert?
-</div>
-
+  <div class="logo">SchnaFin</div>
+  <div>Was ist das wert?</div>
 </header>
-
-
 
 <div class="container">
 
+  <div class="box">
 
-<!-- =================================
-     FOTO
-================================= -->
+    <h1>📸 Artikel fotografieren</h1>
 
-<div class="box">
+    <p>
+      Fotografiere einen Gegenstand oder füge ein Bild hinzu.
+      SchnaFin versucht, Marke und Modell automatisch zu erkennen.
+    </p>
 
-<h1>
-📸 Artikel fotografieren
-</h1>
+    <label class="upload">
+      📷 Foto aufnehmen
+      <input
+        type="file"
+        id="foto"
+        accept="image/*"
+        capture="environment">
+    </label>
 
-<p>
-Fotografiere einen Gegenstand oder füge ein Bild hinzu.
-SchnaFin versucht, den Artikel automatisch zu erkennen.
-</p>
+    <label class="upload secondary">
+      📁 Datei hinzufügen
+      <input
+        type="file"
+        id="datei"
+        accept="image/*">
+    </label>
 
+    <img id="preview">
 
-<label class="upload">
-
-📷 Foto aufnehmen
-
-<input
-type="file"
-id="foto"
-accept="image/*"
-capture="environment">
-
-</label>
-
-
-<label
-class="upload"
-style="margin-top:12px;background:#ffffff;color:#20844a;border:2px solid #20844a;">
-
-📁 Datei hinzufügen
-
-<input
-type="file"
-id="datei"
-accept="image/*">
-
-</label>
+  </div>
 
 
-<img id="preview">
+  <div class="box">
 
-</div>
+    <h2>💰 Angebotspreis</h2>
 
+    <p>
+      Was möchte der Verkäufer dafür haben?
+    </p>
 
+    <input
+      type="number"
+      id="angebotspreis"
+      class="price-input"
+      placeholder="z. B. 350 €"
+      min="0"
+      step="1">
 
-<!-- =================================
-     ANGEBOTSPREIS
-================================= -->
+    <p id="preisHinweis">
+      👉 Erst Artikel fotografieren.
+    </p>
 
-<div class="box">
-
-<h2>
-💰 Angebotspreis
-</h2>
-
-<p>
-Was möchte der Verkäufer dafür haben?
-</p>
-
-<input
-type="number"
-id="angebotspreis"
-class="price-input"
-placeholder="z. B. 350 €"
-min="0"
-step="1">
-
-<p id="preisHinweis">
-👉 Erst Artikel fotografieren, dann Angebotspreis eingeben.
-</p>
-
-</div>
+  </div>
 
 
+  <div id="analyse" style="display:none;">
 
-<!-- =================================
-     ANALYSE
-================================= -->
+    <div class="box">
 
-<div id="analyse">
+      <h2>🤖 SchnaFin analysiert</h2>
 
+      <div id="status" class="status">
+        Foto wird analysiert …
+      </div>
 
-<div class="box">
+      <div id="laden" class="laden">
+        🔎 Marke und Modell werden gesucht …
+      </div>
 
-<h2>
-🤖 SchnaFin analysiert
-</h2>
-
-<p
-id="status"
-class="status">
-
-Das Foto wird automatisch analysiert …
-
-</p>
-
-</div>
+    </div>
 
 
+    <div class="box">
 
-<!-- =================================
-     ERGEBNIS
-================================= -->
+      <h2>🔎 Ergebnis</h2>
 
-<div class="box">
+      <div class="ergebnis">
 
-<h2>
-🔎 Ergebnis
-</h2>
+        <div id="kategorie" class="kategorie">
+          —
+        </div>
+
+        <div id="modell" class="modell">
+          —
+        </div>
+
+        <div id="preis" class="preis">
+          —
+        </div>
+
+        <div id="beschreibung">
+          —
+        </div>
+
+        <div id="bewertung" class="bewertung">
+        </div>
+
+        <div id="details" class="details">
+        </div>
+
+      </div>
 
 
-<div class="ergebnis">
+      <div class="fragen">
+
+        <h2>❓ Verkäufer fragen</h2>
+
+        <div id="fragenListe">
+          Noch keine Fragen verfügbar.
+        </div>
+
+      </div>
 
 
-<div
-id="kategorie"
-class="kategorie">
+      <div class="hinweis">
+        ⚠️ Die aktuelle Preisspanne ist zunächst eine
+        SchnaFin-Orientierung. Im nächsten Schritt bauen wir
+        echte aktuelle Vergleichsangebote ein.
+      </div>
 
-Wird erkannt …
+    </div>
+
+  </div>
 
 </div>
-
-
-<div
-id="preis"
-class="preis">
-
-—
-
-</div>
-
-
-<div id="beschreibung">
-
-Bitte einen Moment …
-
-</div>
-
-
-<div
-id="bewertung"
-class="bewertung">
-
-</div>
-
-
-</div>
-
-
-
-<!-- =================================
-     OCR
-================================= -->
-
-<div class="ocr">
-
-<div class="ocr-title">
-🔤 Erkannter Marken-/Modelltext
-</div>
-
-<div id="ocrText">
-Wird analysiert …
-</div>
-
-</div>
-
-
-
-<!-- =================================
-     FRAGEN
-================================= -->
-
-<div class="fragen">
-
-<h2>
-❓ Das solltest du den Verkäufer noch fragen
-</h2>
-
-<div id="fragenListe">
-
-Noch keine Fragen verfügbar.
-
-</div>
-
-</div>
-
-
-
-<div class="hinweis">
-
-⚠️ Die Preisbereiche sind aktuell eine
-Demo-Orientierung. Für eine echte Bewertung
-bauen wir später aktuelle Vergleichsangebote ein.
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
 
 
 <script>
 
-
-/* =========================================
-   VARIABLEN
-========================================= */
-
-let model = null;
-
-let ocrWorker = null;
-
-let preisMin = 0;
-
-let preisMax = 0;
+const WORKER_URL =
+"https://schnafin-ai.thnfzvyhm2.workers.dev";
 
 let erkannterArtikel = "";
-
-
-
-/* =========================================
-   KI LADEN
-========================================= */
-
-async function ladeKI(){
-
-document.getElementById("status").innerText =
-"🤖 SchnaFin lädt die Bild-KI …";
-
-try{
-
-model =
-await mobilenet.load();
-
-document.getElementById("status").innerText =
-"Bereit – Foto aufnehmen oder Datei hinzufügen!";
-
-}
-
-catch(error){
-
-console.error(error);
-
-document.getElementById("status").innerText =
-"⚠️ Bild-KI konnte nicht geladen werden.";
-
-}
-
-}
-
-ladeKI();
-
+let erkannteKategorie = "";
+let preisMin = 0;
+let preisMax = 0;
 
 
 /* =========================================
-   FOTO ANALYSIEREN
+   ELEMENTE
 ========================================= */
 
-async function analysiereDatei(datei){
+const foto =
+document.getElementById("foto");
 
-if(!datei) return;
+const datei =
+document.getElementById("datei");
 
-
-const bild =
+const preview =
 document.getElementById("preview");
 
+const analyse =
+document.getElementById("analyse");
 
-bild.src =
-URL.createObjectURL(datei);
+const status =
+document.getElementById("status");
 
-bild.style.display =
-"block";
-
-
-document.getElementById("analyse").style.display =
-"block";
-
-
-document.getElementById("status").innerText =
-"🤖 SchnaFin analysiert dein Foto …";
-
-
-try{
-
-if(!model){
-
-model =
-await mobilenet.load();
-
-}
-
-
-if(!bild.complete){
-
-await new Promise(resolve => {
-
-bild.onload =
-resolve;
-
-});
-
-}
-
-
-const ergebnis =
-await model.classify(bild);
-
-
-const erkannt =
-ergebnis[0].className;
-
-
-document.getElementById("status").innerText =
-"Erkannt: " + erkannt;
-
-
-artikelErkennen(erkannt);
-
-}
-
-catch(error){
-
-console.error(error);
-
-document.getElementById("status").innerText =
-"⚠️ Die Bilderkennung konnte nicht abgeschlossen werden.";
-
-}
-
-
-/* OCR */
-
-await textErkennen(datei);
-
-}
-
-
-
-/* =========================================
-   FOTO BUTTON
-========================================= */
-
-document
-.getElementById("foto")
-.onchange = function(){
-
-if(this.files[0]){
-
-analysiereDatei(this.files[0]);
-
-}
-
-};
-
-
-
-/* =========================================
-   DATEI BUTTON
-========================================= */
-
-document
-.getElementById("datei")
-.onchange = function(){
-
-if(this.files[0]){
-
-analysiereDatei(this.files[0]);
-
-}
-
-};
-
-
-
-/* =========================================
-   ARTIKEL ERKENNEN
-========================================= */
-
-function artikelErkennen(artikelName){
-
-let artikel =
-artikelName.toLowerCase();
-
-
-preisMin = 0;
-
-preisMax = 0;
-
-
-/* LAPTOP */
-
-if(
-
-artikel.includes("notebook") ||
-artikel.includes("laptop") ||
-artikel.includes("computer")
-
-){
-
-erkannterArtikel =
-"Laptop / Notebook";
-
-preisMin =
-200;
-
-preisMax =
-450;
-
-}
-
-
-/* SMARTPHONE */
-
-else if(
-
-artikel.includes("cellular") ||
-artikel.includes("smartphone") ||
-artikel.includes("mobile phone") ||
-artikel.includes("iphone") ||
-artikel.includes("phone")
-
-){
-
-erkannterArtikel =
-"Smartphone";
-
-preisMin =
-150;
-
-preisMax =
-500;
-
-}
-
-
-/* KAMERA */
-
-else if(
-
-artikel.includes("camera") ||
-artikel.includes("digital camera")
-
-){
-
-erkannterArtikel =
-"Kamera";
-
-preisMin =
-100;
-
-preisMax =
-400;
-
-}
-
-
-/* STAUBSAUGER */
-
-else if(
-
-artikel.includes("vacuum") ||
-artikel.includes("vacuum cleaner")
-
-){
-
-erkannterArtikel =
-"Staubsauger";
-
-preisMin =
-30;
-
-preisMax =
-150;
-
-}
-
-
-/* BOHRMASCHINE */
-
-else if(
-
-artikel.includes("drill") ||
-artikel.includes("power drill") ||
-artikel.includes("tool")
-
-){
-
-erkannterArtikel =
-"Bohrmaschine / Akkuschrauber";
-
-preisMin =
-40;
-
-preisMax =
-120;
-
-}
-
-
-/* SPIELEKONSOLE */
-
-else if(
-
-artikel.includes("game console") ||
-artikel.includes("console") ||
-artikel.includes("playstation")
-
-){
-
-erkannterArtikel =
-"Spielekonsole";
-
-preisMin =
-100;
-
-preisMax =
-450;
-
-}
-
-
-/* DRUCKER */
-
-else if(
-
-artikel.includes("printer") ||
-artikel.includes("printer machine")
-
-){
-
-erkannterArtikel =
-"Drucker";
-
-preisMin =
-30;
-
-preisMax =
-180;
-
-}
-
-
-/* FERNSEHER */
-
-else if(
-
-artikel.includes("television") ||
-artikel.includes("tv") ||
-artikel.includes("monitor")
-
-){
-
-erkannterArtikel =
-"Fernseher / Monitor";
-
-preisMin =
-80;
-
-preisMax =
-400;
-
-}
-
-
-/* HEADSET */
-
-else if(
-
-artikel.includes("headset") ||
-artikel.includes("headphone")
-
-){
-
-erkannterArtikel =
-"Headset / Kopfhörer";
-
-preisMin =
-30;
-
-preisMax =
-200;
-
-}
-
-
-/* SONSTIGES */
-
-else{
-
-erkannterArtikel =
-"Artikel";
-
-preisMin =
-0;
-
-preisMax =
-0;
-
-}
-
-
-/* ERGEBNIS */
-
-zeigeArtikel();
-
-}
-
-
-
-/* =========================================
-   ERGEBNIS ANZEIGEN
-========================================= */
-
-function zeigeArtikel(){
+const laden =
+document.getElementById("laden");
 
 const kategorie =
 document.getElementById("kategorie");
+
+const modell =
+document.getElementById("modell");
 
 const preis =
 document.getElementById("preis");
@@ -829,496 +361,672 @@ document.getElementById("preis");
 const beschreibung =
 document.getElementById("beschreibung");
 
-
-kategorie.innerText =
-"🏷️ " + erkannterArtikel;
-
-
-if(preisMin > 0){
-
-preis.innerText =
-"ca. " + preisMin + "–" + preisMax + " €";
-
-beschreibung.innerText =
-"Erste grobe Orientierung für gebrauchte Artikel. " +
-"Der tatsächliche Wert hängt von Modell, Zustand, " +
-"Alter und Zubehör ab.";
-
-document.getElementById("preisHinweis").innerText =
-"✅ SchnaFin hat den Artikel erkannt. Jetzt Angebotspreis eingeben.";
-
-}
-else{
-
-preis.innerText =
-"Keine Einschätzung";
-
-beschreibung.innerText =
-"SchnaFin konnte den Artikel noch nicht eindeutig einer Preisgruppe zuordnen.";
-
-document.getElementById("preisHinweis").innerText =
-"⚠️ Für diesen Artikel haben wir momentan noch keine Demo-Preisgruppe.";
-
-}
-
-
-/* FRAGEN */
-
-zeigeFragen(erkannterArtikel);
-
-
-/* Falls Preis bereits eingetragen wurde */
-
-if(
-document.getElementById("angebotspreis").value
-){
-
-preisPruefen();
-
-}
-
-}
-
-
-
-/* =========================================
-   ANGEBOTSPREIS AUTOMATISCH PRÜFEN
-========================================= */
-
-document
-.getElementById("angebotspreis")
-.addEventListener("input", function(){
-
-preisPruefen();
-
-});
-
-
-
-/* =========================================
-   FAIR / PASST / NICHT FAIR
-========================================= */
-
-function preisPruefen(){
-
-const eingabe =
-document.getElementById("angebotspreis").value;
-
-
 const bewertung =
 document.getElementById("bewertung");
 
+const details =
+document.getElementById("details");
 
-if(!eingabe){
+const fragenListe =
+document.getElementById("fragenListe");
 
-bewertung.innerText =
-"";
+const angebotspreis =
+document.getElementById("angebotspreis");
 
-bewertung.className =
-"bewertung";
-
-return;
-
-}
-
-
-if(
-!preisMin ||
-!preisMax
-){
-
-bewertung.innerText =
-"⏳ Für diesen Artikel haben wir noch keine Preisorientierung.";
-
-bewertung.className =
-"bewertung";
-
-return;
-
-}
-
-
-const angebot =
-parseFloat(eingabe);
-
-
-/* SEHR GÜNSTIG */
-
-if(
-angebot < preisMin * 0.85
-){
-
-bewertung.innerText =
-"🟢 FAIR – sehr guter Preis";
-
-bewertung.className =
-"bewertung fair";
-
-}
-
-
-/* NORMAL */
-
-else if(
-angebot <= preisMax
-){
-
-bewertung.innerText =
-"🟡 PASST – Preis ist okay";
-
-bewertung.className =
-"bewertung passt";
-
-}
-
-
-/* ZU TEUER */
-
-else{
-
-bewertung.innerText =
-"🔴 NICHT FAIR – zu teuer";
-
-bewertung.className =
-"bewertung nichtfair";
-
-}
-
-}
-
+const preisHinweis =
+document.getElementById("preisHinweis");
 
 
 /* =========================================
-   OCR
+   FOTO
 ========================================= */
 
-async function textErkennen(datei){
-
-const ausgabe =
-document.getElementById("ocrText");
-
-
-ausgabe.innerText =
-"🔤 Prüfe, ob ein Marken- oder Modellname erkennbar ist …";
-
-
-try{
-
-if(!ocrWorker){
-
-ocrWorker =
-await Tesseract.createWorker("deu+eng");
-
-}
-
-
-const result =
-await ocrWorker.recognize(datei);
-
-
-const text =
-result.data.text.trim();
-
-
-/*
-   Nur Zeilen mit mehreren
-   Buchstaben anzeigen.
-*/
-
-const zeilen =
-text
-.split("\n")
-.map(x => x.trim())
-.filter(x => x.length >= 4);
-
-
-const sinnvoll =
-zeilen.filter(x => {
-
-const buchstaben =
-(x.match(/[A-Za-zÄÖÜäöüß]/g) || []).length;
-
-const sonderzeichen =
-(x.match(/[^A-Za-zÄÖÜäöüß0-9\s.-]/g) || []).length;
-
-return (
-buchstaben >= 3 &&
-sonderzeichen < buchstaben
-);
-
+foto.addEventListener("change", function(){
+  if(this.files[0]){
+    analysiereDatei(this.files[0]);
+  }
 });
 
 
-/*
-   Wenn OCR offensichtlich nur
-   Müll liefert, nichts anzeigen.
-*/
-
-if(sinnvoll.length >= 1){
-
-ausgabe.innerText =
-sinnvoll
-.slice(0,5)
-.join("\n");
-
-}
-
-else{
-
-ausgabe.innerText =
-"Kein eindeutiger Marken- oder Modellname erkannt.";
-
-}
-
-}
-
-catch(error){
-
-console.error(error);
-
-ausgabe.innerText =
-"Keine eindeutige Texterkennung möglich.";
-
-}
-
-}
-
+datei.addEventListener("change", function(){
+  if(this.files[0]){
+    analysiereDatei(this.files[0]);
+  }
+});
 
 
 /* =========================================
-   FRAGEN AN VERKÄUFER
+   BILD VERKLEINERN
 ========================================= */
 
-function zeigeFragen(kategorie){
+async function bildVorbereiten(file){
 
-const liste =
-document.getElementById("fragenListe");
+  return new Promise((resolve,reject)=>{
 
+    const img =
+    new Image();
 
-let fragen = [];
+    const reader =
+    new FileReader();
 
+    reader.onload = function(){
 
-/* LAPTOP */
+      img.onload = function(){
 
-if(
-kategorie.includes("Laptop")
-){
+        const maxSize = 1600;
 
-fragen = [
+        let width = img.width;
+        let height = img.height;
 
-"Wie lautet die genaue Marke und Modellbezeichnung?",
+        if(width > maxSize || height > maxSize){
 
-"Wie viel RAM und Speicher hat das Gerät?",
+          if(width > height){
 
-"Wie alt ist das Gerät?",
+            height =
+            Math.round(height * maxSize / width);
 
-"Wie lange hält der Akku ungefähr?",
+            width =
+            maxSize;
 
-"Gibt es Kratzer, Risse oder andere Schäden?",
+          }else{
 
-"Funktionieren Bildschirm, Tastatur und Anschlüsse?",
+            width =
+            Math.round(width * maxSize / height);
 
-"Ist das originale Ladegerät dabei?",
+            height =
+            maxSize;
 
-"Gibt es eine Rechnung oder einen Kaufbeleg?"
+          }
 
-];
+        }
 
-}
+        const canvas =
+        document.createElement("canvas");
 
+        canvas.width =
+        width;
 
-/* SMARTPHONE */
+        canvas.height =
+        height;
 
-else if(
-kategorie.includes("Smartphone")
-){
+        const ctx =
+        canvas.getContext("2d");
 
-fragen = [
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          width,
+          height
+        );
 
-"Welches genaue Modell und wie viel Speicher hat es?",
+        const dataUrl =
+        canvas.toDataURL(
+          "image/jpeg",
+          0.82
+        );
 
-"Wie ist der Batteriezustand?",
+        resolve(dataUrl);
 
-"Hat das Display Kratzer oder Risse?",
+      };
 
-"Wurde das Gerät bereits repariert?",
+      img.onerror =
+      reject;
 
-"Funktionieren Kamera, Lautsprecher und Anschlüsse?",
+      img.src =
+      reader.result;
 
-"Ist das Gerät vollständig zurückgesetzt?",
+    };
 
-"Sind Originalverpackung und Zubehör dabei?"
+    reader.onerror =
+    reject;
 
-];
+    reader.readAsDataURL(file);
 
-}
-
-
-/* DRUCKER */
-
-else if(
-kategorie.includes("Drucker")
-){
-
-fragen = [
-
-"Wie lautet die genaue Marke und Modellbezeichnung?",
-
-"Funktioniert der Drucker vollständig?",
-
-"Funktionieren Drucken und Scannen einwandfrei?",
-
-"Wie voll sind die Patronen bzw. Toner?",
-
-"Sind originale Patronen oder Toner dabei?",
-
-"Gibt es Fehlermeldungen?",
-
-"Ist das originale Netzteil dabei?"
-
-];
+  });
 
 }
 
 
-/* KAMERA */
+/* =========================================
+   DATEI ANALYSIEREN
+========================================= */
 
-else if(
-kategorie.includes("Kamera")
-){
+async function analysiereDatei(file){
 
-fragen = [
+  analyse.style.display =
+  "block";
 
-"Wie lautet die genaue Modellbezeichnung?",
+  status.innerText =
+  "🤖 SchnaFin analysiert dein Foto …";
 
-"Wie viele Auslösungen hat die Kamera ungefähr?",
+  laden.style.display =
+  "block";
 
-"Funktionieren Autofokus und Display?",
+  bewertung.innerText =
+  "";
 
-"Gibt es Kratzer oder Schäden?",
+  preview.src =
+  URL.createObjectURL(file);
 
-"Welche Objektive und welches Zubehör sind dabei?",
+  preview.style.display =
+  "block";
 
-"Gibt es eine Rechnung oder einen Kaufbeleg?"
+  kategorie.innerText =
+  "Wird erkannt …";
 
-];
+  modell.innerText =
+  "";
 
-}
+  preis.innerText =
+  "";
 
+  beschreibung.innerText =
+  "";
 
-/* STAUBSAUGER */
+  details.innerText =
+  "";
 
-else if(
-kategorie.includes("Staubsauger")
-){
+  try{
 
-fragen = [
+    const dataUrl =
+    await bildVorbereiten(file);
 
-"Wie lautet die genaue Modellbezeichnung?",
+    const teile =
+    dataUrl.split(",");
 
-"Wie alt ist das Gerät?",
+    const base64 =
+    teile[1];
 
-"Funktioniert es vollständig?",
+    const response =
+    await fetch(
+      WORKER_URL,
+      {
+        method:"POST",
 
-"Wie ist der Zustand des Akkus?",
+        headers:{
+          "Content-Type":
+          "application/json"
+        },
 
-"Sind alle wichtigen Aufsätze dabei?",
-
-"Gibt es bekannte Defekte?"
-
-];
-
-}
-
-
-/* AKKUSCHRAUBER */
-
-else if(
-kategorie.includes("Bohrmaschine")
-){
-
-fragen = [
-
-"Welche genaue Modellbezeichnung hat das Gerät?",
-
-"Wie viele Akkus sind dabei?",
-
-"Welche Akkukapazität haben die Akkus?",
-
-"Ist das originale Ladegerät dabei?",
-
-"Funktioniert das Gerät ohne Probleme?",
-
-"Gibt es Schäden oder starken Verschleiß?",
-
-"Ist ein Koffer oder weiteres Zubehör dabei?"
-
-];
-
-}
+        body:JSON.stringify({
+          image:base64,
+          mimeType:"image/jpeg"
+        })
+      }
+    );
 
 
-/* KONSOLE */
-
-else if(
-kategorie.includes("Spielekonsole")
-){
-
-fragen = [
-
-"Welches genaue Modell und welche Speichervariante ist es?",
-
-"Funktioniert die Konsole vollständig?",
-
-"Wie viele Controller sind dabei?",
-
-"Sind originale Kabel und Netzteil vorhanden?",
-
-"Gibt es Kratzer oder andere Schäden?",
-
-"Sind Spiele oder weiteres Zubehör dabei?"
-
-];
-
-}
+    const data =
+    await response.json();
 
 
-/* ALLGEMEIN */
+    if(!response.ok || !data.ok){
 
-else{
+      throw new Error(
+        data.error ||
+        "Analyse fehlgeschlagen."
+      );
 
-fragen = [
+    }
 
-"Wie lautet die genaue Modellbezeichnung?",
 
-"Wie alt ist der Artikel?",
+    erkannterArtikel =
+    data.artikel ||
+    "";
 
-"Wie ist der Zustand?",
+    erkannteKategorie =
+    data.kategorie ||
+    "Artikel";
 
-"Gibt es bekannte Defekte oder Schäden?",
 
-"Welches Zubehör ist dabei?",
+    zeigeErgebnis(data);
 
-"Gibt es eine Rechnung oder einen Kaufbeleg?"
 
-];
+    status.innerText =
+    "✅ Foto erfolgreich analysiert.";
+
+    laden.style.display =
+    "none";
+
+
+  }catch(error){
+
+    console.error(error);
+
+    status.innerText =
+    "⚠️ Die Produkterkennung konnte nicht durchgeführt werden.";
+
+    laden.style.display =
+    "none";
+
+    kategorie.innerText =
+    "Erkennung fehlgeschlagen";
+
+    beschreibung.innerText =
+    "Bitte versuche es mit einem Foto, auf dem Marke oder Modell gut sichtbar sind.";
+
+  }
 
 }
 
 
-/* AUSGABE */
+/* =========================================
+   ERGEBNIS
+========================================= */
 
-liste.innerHTML =
-fragen
-.map(frage =>
-'<div class="frage">❓ ' + frage + '</div>'
-)
-.join("");
+function zeigeErgebnis(data){
+
+  const marke =
+  data.marke;
+
+  const modellName =
+  data.modell;
+
+  const artikel =
+  data.artikel;
+
+  const sicherheit =
+  Math.round(
+    (data.sicherheit || 0) * 100
+  );
+
+
+  if(artikel){
+
+    kategorie.innerText =
+    "🏷️ " + artikel;
+
+  }else{
+
+    kategorie.innerText =
+    "🏷️ " + erkannteKategorie;
+
+  }
+
+
+  if(marke || modellName){
+
+    modell.innerText =
+    "🔍 " +
+    (marke || "") +
+    (marke && modellName ? " " : "") +
+    (modellName || "");
+
+  }else{
+
+    modell.innerText =
+    "Modell nicht eindeutig erkannt.";
+
+  }
+
+
+  details.innerText =
+  "Erkennungssicherheit: " +
+  sicherheit +
+  "%";
+
+
+  if(
+    Array.isArray(data.erkannteDetails) &&
+    data.erkannteDetails.length > 0
+  ){
+
+    details.innerText +=
+    "\n\n" +
+    data.erkannteDetails.join(" • ");
+
+  }
+
+
+  beschreibung.innerText =
+  data.begruendung ||
+  "SchnaFin hat das Foto analysiert.";
+
+
+  setzePreisbereich(
+    (artikel || "") +
+    " " +
+    (erkannteKategorie || "")
+  );
+
+
+  zeigeFragen(
+    artikel ||
+    erkannteKategorie
+  );
+
+
+  preisPruefen();
+
+}
+
+
+/* =========================================
+   PREISBEREICH
+========================================= */
+
+function setzePreisbereich(text){
+
+  const t =
+  text.toLowerCase();
+
+
+  preisMin = 0;
+  preisMax = 0;
+
+
+  if(
+    t.includes("laptop") ||
+    t.includes("notebook")
+  ){
+
+    preisMin = 200;
+    preisMax = 450;
+
+  }
+
+  else if(
+    t.includes("smartphone") ||
+    t.includes("iphone") ||
+    t.includes("handy")
+  ){
+
+    preisMin = 150;
+    preisMax = 500;
+
+  }
+
+  else if(
+    t.includes("kamera") ||
+    t.includes("camera")
+  ){
+
+    preisMin = 100;
+    preisMax = 400;
+
+  }
+
+  else if(
+    t.includes("staubsauger") ||
+    t.includes("vacuum")
+  ){
+
+    preisMin = 30;
+    preisMax = 150;
+
+  }
+
+  else if(
+    t.includes("bohr") ||
+    t.includes("akkuschrauber") ||
+    t.includes("drill")
+  ){
+
+    preisMin = 40;
+    preisMax = 120;
+
+  }
+
+  else if(
+    t.includes("playstation") ||
+    t.includes("xbox") ||
+    t.includes("konsole") ||
+    t.includes("console")
+  ){
+
+    preisMin = 100;
+    preisMax = 450;
+
+  }
+
+  else if(
+    t.includes("drucker") ||
+    t.includes("printer")
+  ){
+
+    preisMin = 30;
+    preisMax = 180;
+
+  }
+
+  else if(
+    t.includes("fernseher") ||
+    t.includes("television") ||
+    t.includes("monitor")
+  ){
+
+    preisMin = 80;
+    preisMax = 400;
+
+  }
+
+  else if(
+    t.includes("headset") ||
+    t.includes("kopfhörer") ||
+    t.includes("headphone")
+  ){
+
+    preisMin = 30;
+    preisMax = 200;
+
+  }
+
+
+  if(preisMin > 0){
+
+    preis.innerText =
+    "ca. " +
+    preisMin +
+    "–" +
+    preisMax +
+    " €";
+
+    preisHinweis.innerText =
+    "✅ Artikel erkannt. Jetzt Angebotspreis eingeben.";
+
+  }else{
+
+    preis.innerText =
+    "Noch keine Preisspanne";
+
+    preisHinweis.innerText =
+    "👉 Angebotspreis eingeben.";
+
+  }
+
+}
+
+
+/* =========================================
+   PREIS PRÜFEN
+========================================= */
+
+angebotspreis.addEventListener(
+  "input",
+  preisPruefen
+);
+
+
+function preisPruefen(){
+
+  const wert =
+  parseFloat(
+    angebotspreis.value
+  );
+
+
+  bewertung.className =
+  "bewertung";
+
+  bewertung.innerText =
+  "";
+
+
+  if(
+    isNaN(wert) ||
+    preisMin === 0
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    wert <
+    preisMin * 0.85
+  ){
+
+    bewertung.className =
+    "bewertung fair";
+
+    bewertung.innerText =
+    "🟢 FAIR – sehr guter Preis";
+
+  }
+
+  else if(
+    wert <= preisMax
+  ){
+
+    bewertung.className =
+    "bewertung passt";
+
+    bewertung.innerText =
+    "🟡 PASST – Preis ist okay";
+
+  }
+
+  else{
+
+    bewertung.className =
+    "bewertung nichtfair";
+
+    bewertung.innerText =
+    "🔴 NICHT FAIR – zu teuer";
+
+  }
+
+}
+
+
+/* =========================================
+   VERKÄUFERFRAGEN
+========================================= */
+
+function zeigeFragen(text){
+
+  const t =
+  text.toLowerCase();
+
+  let fragen = [];
+
+
+  if(
+    t.includes("laptop") ||
+    t.includes("notebook")
+  ){
+
+    fragen = [
+      "Wie alt ist das Gerät?",
+      "Wie ist der Zustand des Akkus?",
+      "Gibt es die Originalrechnung?",
+      "Ist das originale Ladegerät dabei?",
+      "Gibt es Kratzer oder Schäden am Display?"
+    ];
+
+  }
+
+  else if(
+    t.includes("smartphone") ||
+    t.includes("iphone") ||
+    t.includes("handy")
+  ){
+
+    fragen = [
+      "Wie alt ist das Smartphone?",
+      "Wie ist der Zustand des Akkus?",
+      "Ist das Display ohne Risse?",
+      "Ist die Originalrechnung vorhanden?",
+      "Ist das Gerät frei von iCloud- oder Google-Sperren?"
+    ];
+
+  }
+
+  else if(
+    t.includes("playstation") ||
+    t.includes("xbox") ||
+    t.includes("konsole")
+  ){
+
+    fragen = [
+      "Funktioniert die Konsole vollständig?",
+      "Welche Controller sind dabei?",
+      "Sind die Originalkabel vorhanden?",
+      "Gibt es Spiele oder Zubehör dazu?",
+      "Gibt es bekannte Fehler?"
+    ];
+
+  }
+
+  else if(
+    t.includes("bohr") ||
+    t.includes("akkuschrauber") ||
+    t.includes("drill")
+  ){
+
+    fragen = [
+      "Funktioniert das Gerät vollständig?",
+      "Wie alt sind die Akkus?",
+      "Sind Ladegerät und Akkus dabei?",
+      "Gibt es sichtbare Schäden?",
+      "Gibt es die Originalrechnung?"
+    ];
+
+  }
+
+  else if(
+    t.includes("drucker") ||
+    t.includes("printer")
+  ){
+
+    fragen = [
+      "Funktioniert der Drucker vollständig?",
+      "Sind Tintenpatronen dabei?",
+      "Wie viele Seiten wurden ungefähr gedruckt?",
+      "Gibt es Fehlermeldungen?",
+      "Ist das originale Netzteil vorhanden?"
+    ];
+
+  }
+
+  else{
+
+    fragen = [
+      "Wie alt ist der Artikel?",
+      "Wie ist der allgemeine Zustand?",
+      "Gibt es sichtbare Schäden?",
+      "Ist eine Originalrechnung vorhanden?",
+      "Welches Zubehör ist dabei?"
+    ];
+
+  }
+
+
+  fragenListe.innerHTML =
+  fragen
+    .map(
+      frage =>
+      '<div class="frage">❓ ' +
+      frage +
+      '</div>'
+    )
+    .join("");
 
 }
 
 </script>
-
 
 </body>
 </html>
