@@ -153,14 +153,23 @@ input[type="file"]{
   margin-bottom:8px;
 }
 
+.fragen{
+  margin-top:15px;
+}
+
+.frage{
+  background:#ffffff;
+  border-left:5px solid #20844a;
+  padding:13px;
+  margin-top:10px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+
 .hinweis{
   font-size:13px;
   color:#666;
   margin-top:15px;
-}
-
-#preisPruefung{
-  display:none;
 }
 
 </style>
@@ -250,7 +259,7 @@ accept="image/*">
 
 
 <!-- =================================
-     PREIS EINGEBEN
+     PREIS
 ================================= -->
 
 <div class="box">
@@ -348,10 +357,6 @@ Bitte einen Moment …
 
 
 
-<!-- =================================
-     BEWERTUNG
-================================= -->
-
 <div
 id="bewertung"
 class="bewertung">
@@ -364,7 +369,7 @@ class="bewertung">
 
 
 <!-- =================================
-     OCR
+     ERKANNTER TEXT
 ================================= -->
 
 <div class="ocr">
@@ -385,11 +390,31 @@ Wird noch analysiert …
 
 
 
+<!-- =================================
+     FRAGEN AN VERKÄUFER
+================================= -->
+
+<div class="fragen">
+
+<h2>
+❓ Das solltest du den Verkäufer noch fragen
+</h2>
+
+<div id="fragenListe">
+
+Noch keine Fragen verfügbar.
+
+</div>
+
+</div>
+
+
+
 <div class="hinweis">
 
 ⚠️ Die Preisbereiche sind aktuell eine
-erste Demo-Orientierung. Für eine echte
-Bewertung benötigen wir aktuelle Vergleichsangebote.
+erste Demo-Orientierung. Für eine echte Bewertung
+brauchen wir aktuelle Vergleichsangebote.
 
 </div>
 
@@ -432,11 +457,24 @@ async function ladeKI(){
 document.getElementById("status").innerText =
 "🤖 SchnaFin lädt die Bild-KI …";
 
+try{
+
 model =
 await mobilenet.load();
 
 document.getElementById("status").innerText =
 "Bereit – Foto aufnehmen oder Datei hinzufügen!";
+
+}
+
+catch(error){
+
+console.error(error);
+
+document.getElementById("status").innerText =
+"⚠️ Bild-KI konnte nicht geladen werden.";
+
+}
 
 }
 
@@ -477,6 +515,8 @@ document.getElementById("status").innerText =
    BILD-KI
 ===================================== */
 
+try{
+
 if(!model){
 
 model =
@@ -510,6 +550,18 @@ document.getElementById("status").innerText =
 
 
 preisBerechnen(erkannt);
+
+
+}
+
+catch(error){
+
+console.error(error);
+
+document.getElementById("status").innerText =
+"⚠️ Die Bilderkennung konnte nicht abgeschlossen werden.";
+
+}
 
 
 
@@ -574,7 +626,7 @@ document.getElementById("ocrText");
 
 
 ausgabe.innerText =
-"🔤 SchnaFin liest den Text auf dem Bild …";
+"🔤 SchnaFin liest Text auf dem Bild …";
 
 
 try{
@@ -596,17 +648,57 @@ const text =
 result.data.text.trim();
 
 
-if(text){
+/*
+   OCR aufräumen.
+
+   Wir zeigen nur Text an,
+   wenn tatsächlich sinnvolle
+   Buchstaben vorhanden sind.
+*/
+
+const zeilen =
+text
+.split("\n")
+.map(x => x.trim())
+.filter(x => x.length >= 3);
+
+
+const sinnvoll =
+zeilen.filter(x => {
+
+const buchstaben =
+(x.match(/[A-Za-zÄÖÜäöüß]/g) || []).length;
+
+const zahlen =
+(x.match(/[0-9]/g) || []).length;
+
+return (
+buchstaben >= 2 &&
+(buchstaben + zahlen) >= 3
+);
+
+});
+
+
+if(sinnvoll.length > 0){
+
+/*
+   Maximal 8 Zeilen anzeigen,
+   damit die App nicht mit OCR-Müll
+   zugespammt wird.
+*/
 
 ausgabe.innerText =
-text;
+sinnvoll
+.slice(0,8)
+.join("\n");
 
 }
 
 else{
 
 ausgabe.innerText =
-"Kein lesbarer Text gefunden.";
+"Kein eindeutiger Modell- oder Markenname erkannt.";
 
 }
 
@@ -648,9 +740,11 @@ let text =
 "Für diesen Artikel haben wir noch keine Vergleichsdaten.";
 
 
-preisMin = 0;
+preisMin =
+0;
 
-preisMax = 0;
+preisMax =
+0;
 
 
 
@@ -671,14 +765,17 @@ artikel.includes("computer")
 kategorie =
 "💻 Laptop / Notebook";
 
+
 preis =
 "ca. 200–450 €";
+
 
 preisMin =
 200;
 
 preisMax =
 450;
+
 
 text =
 "Grobe erste Orientierung für gebrauchte Laptops. " +
@@ -710,14 +807,17 @@ artikel.includes("phone")
 kategorie =
 "📱 Smartphone";
 
+
 preis =
 "ca. 150–500 €";
+
 
 preisMin =
 150;
 
 preisMax =
 500;
+
 
 text =
 "Grobe erste Orientierung. Modell, Speicher, Akku " +
@@ -742,14 +842,17 @@ artikel.includes("digital camera")
 kategorie =
 "📷 Kamera";
 
+
 preis =
 "ca. 100–400 €";
+
 
 preisMin =
 100;
 
 preisMax =
 400;
+
 
 text =
 "Grobe Orientierung für gebrauchte Kameras. " +
@@ -774,14 +877,17 @@ artikel.includes("vacuum cleaner")
 kategorie =
 "🧹 Staubsauger";
 
+
 preis =
 "ca. 30–150 €";
+
 
 preisMin =
 30;
 
 preisMax =
 150;
+
 
 text =
 "Grobe Orientierung. Marke, Modell, Zubehör " +
@@ -808,14 +914,17 @@ artikel.includes("tool")
 kategorie =
 "🔧 Bohrmaschine / Akkuschrauber";
 
+
 preis =
 "ca. 40–120 €";
+
 
 preisMin =
 40;
 
 preisMax =
 120;
+
 
 text =
 "Grobe Orientierung. Hersteller, Akkus, Ladegerät " +
@@ -842,14 +951,17 @@ artikel.includes("playstation")
 kategorie =
 "🎮 Spielekonsole";
 
+
 preis =
 "ca. 100–450 €";
+
 
 preisMin =
 100;
 
 preisMax =
 450;
+
 
 text =
 "Grobe Orientierung. Modell, Speicher, Controller, " +
@@ -879,7 +991,12 @@ document.getElementById("beschreibung").innerText =
 text;
 
 
-/* Falls schon ein Angebotspreis eingegeben wurde */
+/* Fragen anzeigen */
+
+zeigeFragen(kategorie);
+
+
+/* Falls bereits Preis eingegeben */
 
 if(
 document.getElementById("angebotspreis").value
@@ -888,6 +1005,237 @@ document.getElementById("angebotspreis").value
 preisPruefen();
 
 }
+
+}
+
+
+
+/* =========================================
+   FRAGEN AN VERKÄUFER
+========================================= */
+
+function zeigeFragen(kategorie){
+
+const liste =
+document.getElementById("fragenListe");
+
+
+let fragen = [];
+
+
+
+/* =====================================
+   LAPTOP
+===================================== */
+
+if(
+kategorie.includes("Laptop")
+){
+
+fragen = [
+
+"Wie lautet die genaue Marke und Modellbezeichnung?",
+
+"Wie viel RAM und Speicher hat das Gerät?",
+
+"Wie lange hält der Akku ungefähr?",
+
+"Gibt es Kratzer, Risse oder andere Schäden?",
+
+"Funktionieren Bildschirm, Tastatur, Touchpad und Anschlüsse einwandfrei?",
+
+"Ist das originale Ladegerät dabei?",
+
+"Gibt es eine Rechnung oder einen Kaufbeleg?"
+
+];
+
+}
+
+
+
+/* =====================================
+   SMARTPHONE
+===================================== */
+
+else if(
+kategorie.includes("Smartphone")
+){
+
+fragen = [
+
+"Welches genaue Modell und wie viel Speicher hat es?",
+
+"Wie hoch ist die Akkukapazität bzw. der Batteriezustand?",
+
+"Hat das Display Kratzer oder Risse?",
+
+"Funktionieren Kamera, Lautsprecher und Anschlüsse?",
+
+"Wurde das Smartphone bereits repariert?",
+
+"Ist das Gerät vollständig zurückgesetzt und von allen Konten abgemeldet?",
+
+"Sind Originalverpackung und Zubehör dabei?"
+
+];
+
+}
+
+
+
+/* =====================================
+   KAMERA
+===================================== */
+
+else if(
+kategorie.includes("Kamera")
+){
+
+fragen = [
+
+"Wie lautet die genaue Modellbezeichnung?",
+
+"Wie viele Auslösungen hat die Kamera ungefähr?",
+
+"Funktionieren Objektiv, Display und Autofokus einwandfrei?",
+
+"Gibt es Kratzer oder andere Schäden?",
+
+"Welche Objektive und welches Zubehör sind dabei?",
+
+"Gibt es eine Rechnung oder einen Kaufbeleg?"
+
+];
+
+}
+
+
+
+/* =====================================
+   STAUBSAUGER
+===================================== */
+
+else if(
+kategorie.includes("Staubsauger")
+){
+
+fragen = [
+
+"Wie lautet die genaue Modellbezeichnung?",
+
+"Funktioniert das Gerät vollständig?",
+
+"Wie alt ist der Staubsauger?",
+
+"Wie ist der Zustand von Akku und Ladegerät?",
+
+"Sind alle wichtigen Aufsätze und Zubehörteile dabei?",
+
+"Gibt es bekannte Defekte?"
+
+];
+
+}
+
+
+
+/* =====================================
+   BOHRMASCHINE
+===================================== */
+
+else if(
+kategorie.includes("Bohrmaschine")
+){
+
+fragen = [
+
+"Welche genaue Modellbezeichnung hat das Gerät?",
+
+"Wie viele Akkus sind dabei?",
+
+"Welche Akkukapazität haben die Akkus?",
+
+"Ist das originale Ladegerät dabei?",
+
+"Funktioniert das Gerät ohne Probleme?",
+
+"Gibt es Schäden oder starken Verschleiß?",
+
+"Ist ein Koffer oder weiteres Zubehör dabei?"
+
+];
+
+}
+
+
+
+/* =====================================
+   SPIELEKONSOLE
+===================================== */
+
+else if(
+kategorie.includes("Spielekonsole")
+){
+
+fragen = [
+
+"Welches genaue Modell und welche Speichervariante ist es?",
+
+"Funktioniert die Konsole vollständig?",
+
+"Wie viele Controller sind dabei?",
+
+"Sind originale Kabel und Netzteil vorhanden?",
+
+"Gibt es Kratzer oder andere Schäden?",
+
+"Sind Spiele oder weiteres Zubehör dabei?",
+
+"Gibt es eine Rechnung oder einen Kaufbeleg?"
+
+];
+
+}
+
+
+
+/* =====================================
+   ALLGEMEINE FRAGEN
+===================================== */
+
+else{
+
+fragen = [
+
+"Wie lautet die genaue Modellbezeichnung?",
+
+"Wie alt ist der Artikel?",
+
+"Wie ist der Zustand?",
+
+"Gibt es bekannte Defekte oder Schäden?",
+
+"Welches Zubehör ist dabei?",
+
+"Gibt es eine Rechnung oder einen Kaufbeleg?"
+
+];
+
+}
+
+
+
+/* =====================================
+   FRAGEN IN HTML
+===================================== */
+
+liste.innerHTML =
+fragen
+.map(frage =>
+'<div class="frage">❓ ' + frage + '</div>'
+)
+.join("");
 
 }
 
@@ -930,7 +1278,7 @@ if(
 ){
 
 bewertung.innerText =
-"⏳ Artikel zuerst fotografieren.";
+"⏳ Bitte zuerst einen Artikel fotografieren.";
 
 bewertung.className =
 "bewertung";
@@ -940,37 +1288,26 @@ return;
 }
 
 
-
 /*
-   Bewertungslogik:
+   Bewertungslogik.
 
-   deutlich unter Orientierung
-   = FAIR
+   Unterhalb der Orientierung:
+   sehr guter Preis.
 
-   innerhalb der Orientierung
-   = PASST
+   Innerhalb:
+   Preis passt.
 
-   deutlich über Orientierung
-   = NICHT FAIR
+   Über der Orientierung:
+   zu teuer.
 */
 
 
-const untereGrenze =
-preisMin;
-
-
-const obereGrenze =
-preisMax;
-
-
-
 if(
-angebot < untereGrenze * 0.85
+angebot < preisMin * 0.85
 ){
 
 bewertung.innerText =
 "🟢 FAIR – sehr guter Preis";
-
 
 bewertung.className =
 "bewertung fair";
@@ -979,12 +1316,11 @@ bewertung.className =
 
 
 else if(
-angebot <= obereGrenze
+angebot <= preisMax
 ){
 
 bewertung.innerText =
 "🟡 PASST – Preis ist okay";
-
 
 bewertung.className =
 "bewertung passt";
@@ -996,7 +1332,6 @@ else{
 
 bewertung.innerText =
 "🔴 NICHT FAIR – zu teuer";
-
 
 bewertung.className =
 "bewertung nichtfair";
