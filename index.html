@@ -2,81 +2,204 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>SchnaFin</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f7f5;
+  color:#1d2b25;
+}
+
+header{
+  background:#ffffff;
+  padding:20px;
+  text-align:center;
+  border-bottom:1px solid #ddd;
+}
+
+.logo{
+  font-size:32px;
+  font-weight:bold;
+  color:#20844a;
+}
+
+.container{
+  max-width:600px;
+  margin:auto;
+  padding:25px 18px;
+}
+
+.box{
+  background:white;
+  border-radius:18px;
+  padding:22px;
+  margin-top:20px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+h1,h2{
+  margin-top:0;
+}
+
+.upload{
+  display:block;
+  background:#20844a;
+  color:white;
+  text-align:center;
+  padding:16px;
+  border-radius:14px;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+input[type="file"]{
+  display:none;
+}
+
+#preview{
+  width:100%;
+  max-height:400px;
+  object-fit:contain;
+  border-radius:14px;
+  margin-top:20px;
+  display:none;
+}
+
+#analyse{
+  display:none;
+}
+
+.status{
+  font-size:18px;
+  font-weight:bold;
+}
+
+.ergebnis{
+  background:#f1f8f3;
+  border-radius:15px;
+  padding:18px;
+  margin-top:15px;
+}
+
+.preis{
+  font-size:30px;
+  font-weight:bold;
+  color:#20844a;
+}
+
+.kategorie{
+  font-size:20px;
+  font-weight:bold;
+}
+
+.hinweis{
+  font-size:13px;
+  color:#666;
+  margin-top:15px;
+}
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
 
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f4fff8;color:#173b2a;text-align:center}
-.app{max-width:500px;margin:auto;padding:35px 22px}
-.logo{font-size:42px;font-weight:800;margin:25px 0 8px}
-.subtitle{font-size:18px;margin-bottom:40px}
-.camera{width:190px;height:190px;margin:auto;border:4px solid #2f9e62;border-radius:35px;background:white;display:flex;align-items:center;justify-content:center;font-size:75px}
-h1{font-size:28px;margin:25px 0 10px}
-p{font-size:17px;line-height:1.5;color:#50705e}
-.button{display:inline-block;margin-top:15px;padding:18px 30px;background:#2f9e62;color:white;border-radius:18px;font-size:19px;font-weight:bold}
-input[type="file"] {display:none}
-#preview{display:none;width:100%;max-height:300px;object-fit:contain;margin-top:25px;border-radius:20px}
-#analyse{display:none;margin-top:25px}
-.box{background:white;border-radius:20px;padding:22px;margin-top:20px}
-.text{width:100%;padding:15px;border:2px solid #cde8d8;border-radius:14px;font-size:17px}
-button{border:0;cursor:pointer}
-.result{display:none;margin-top:20px;background:#173b2a;color:white;border-radius:20px;padding:25px}
-.price{font-size:38px;font-weight:bold;margin:10px}
-</style>
 </head>
 
 <body>
-<div class="app">
 
-<div class="logo">SchnaFin</div>
-<div class="subtitle">Was ist dein Artikel wirklich wert?</div>
+<header>
+  <div class="logo">SchnaFin</div>
+  <div>Was ist das wert?</div>
+</header>
 
-<div class="camera">📷</div>
+<div class="container">
 
-<h1>Artikel fotografieren</h1>
-<p>Fotografiere deinen Artikel und SchnaFin hilft dir, einen fairen Preis einzuschätzen.</p>
+  <div class="box">
+    <h1>📸 Artikel fotografieren</h1>
 
-<label class="button">
-📸 Foto aufnehmen
-<input id="foto" type="file" accept="image/*" capture="environment">
-</label>
+    <p>
+      Fotografiere einen Gegenstand und SchnaFin versucht,
+      ihn automatisch zu erkennen.
+    </p>
 
-<img id="preview">
+    <label class="upload">
+      📷 Foto aufnehmen
+      <input type="file" id="foto" accept="image/*" capture="environment">
+    </label>
 
-<div id="analyse">
+    <img id="preview">
+  </div>
 
-<div class="box">
+  <div id="analyse">
 
-<h2>🤖 SchnaFin analysiert</h2>
+    <div class="box">
+      <h2>🤖 SchnaFin analysiert</h2>
 
-<p id="status">Das Foto wird automatisch analysiert …</
-<div class="result" id="result">
-<div>SchnaFin-Einschätzung</div>
-<div class="price" id="preis"></div>
-<div id="beschreibung"></div>
-</div>
-</div>
+      <p id="status" class="status">
+        Das Foto wird automatisch analysiert …
+      </p>
+    </div>
+
+    <div class="box" id="resultat">
+
+      <h2>🔎 Ergebnis</h2>
+
+      <div class="ergebnis">
+
+        <div id="kategorie" class="kategorie">
+          Wird erkannt …
+        </div>
+
+        <div id="preis" class="preis">
+          —
+        </div>
+
+        <div id="beschreibung">
+          Bitte einen Moment …
+        </div>
+
+      </div>
+
+      <div class="hinweis">
+        ⚠️ Erste Orientierung. Für eine echte Bewertung brauchen wir
+        im nächsten Schritt Modell, Zustand und aktuelle Vergleichsangebote.
+      </div>
+
+    </div>
+
+  </div>
 
 </div>
 
 <script>
+
 let model;
 
-async function ladeKI() {
+async function ladeKI(){
+
+  document.getElementById("status").innerText =
+    "🤖 KI wird geladen …";
+
   model = await mobilenet.load();
+
+  document.getElementById("status").innerText =
+    "Bereit – Foto aufnehmen!";
+
 }
 
 ladeKI();
 
-const foto=document.getElementById("foto");
 
-foto.onchange = async function() {
+const foto = document.getElementById("foto");
 
-  if (!foto.files[0]) return;
+
+foto.onchange = async function(){
+
+  if(!foto.files[0]) return;
 
   const bild = document.getElementById("preview");
 
@@ -85,46 +208,180 @@ foto.onchange = async function() {
 
   document.getElementById("analyse").style.display = "block";
 
-  if (!model) {
+  document.getElementById("status").innerText =
+    "🤖 SchnaFin analysiert dein Foto …";
+
+
+  if(!model){
     model = await mobilenet.load();
   }
+
+
+  /*
+    Warten, bis das Bild vollständig geladen ist.
+  */
+
+  if(!bild.complete){
+    await new Promise(resolve => {
+      bild.onload = resolve;
+    });
+  }
+
 
   const ergebnis = await model.classify(bild);
 
   const erkannt = ergebnis[0].className;
 
-document.getElementById("status").innerText =
-  "Erkannt: " + erkannt;
+  document.getElementById("status").innerText =
+    "Erkannt: " + erkannt;
 
-preisBerechnen(erkannt);
+
+  preisBerechnen(erkannt);
+
 };
+
 
 function preisBerechnen(artikelName){
 
-let artikel=artikelName.toLowerCase();
+  let artikel = artikelName.toLowerCase();
 
-let preis="Noch keine Einschätzung";
-let text="Für diesen Artikel haben wir noch keine Vergleichsdaten.";
+  let kategorie = "Artikel";
+  let preis = "Noch keine Einschätzung";
+  let text = "Für diesen Artikel haben wir noch keine Vergleichsdaten.";
 
-if(artikel.includes("ps5")){
-preis="ca. 350–450 €";
-text="Abhängig von Modell, Speicher, Zustand und Zubehör.";
+
+  /*
+    LAPTOP / NOTEBOOK
+  */
+
+  if(
+    artikel.includes("notebook") ||
+    artikel.includes("laptop") ||
+    artikel.includes("computer")
+  ){
+
+    kategorie = "💻 Laptop / Notebook";
+
+    preis = "ca. 200–450 €";
+
+    text =
+      "Grobe erste Orientierung für gebrauchte Laptops. " +
+      "Der tatsächliche Wert hängt stark von Marke, Modell, Baujahr, " +
+      "Prozessor, RAM, Speicher und Zustand ab.";
+  }
+
+
+  /*
+    SMARTPHONE
+  */
+
+  else if(
+    artikel.includes("cellular") ||
+    artikel.includes("smartphone") ||
+    artikel.includes("mobile phone") ||
+    artikel.includes("iphone") ||
+    artikel.includes("phone")
+  ){
+
+    kategorie = "📱 Smartphone";
+
+    preis = "ca. 150–500 €";
+
+    text =
+      "Grobe erste Orientierung. Modell, Speicher, Akku und Zustand " +
+      "können den Wert deutlich verändern.";
+  }
+
+
+  /*
+    KAMERA
+  */
+
+  else if(
+    artikel.includes("camera") ||
+    artikel.includes("digital camera")
+  ){
+
+    kategorie = "📷 Kamera";
+
+    preis = "ca. 100–400 €";
+
+    text =
+      "Grobe Orientierung für gebrauchte Kameras. " +
+      "Marke, Modell und Objektiv sind besonders wichtig.";
+  }
+
+
+  /*
+    STAUBSAUGER
+  */
+
+  else if(
+    artikel.includes("vacuum") ||
+    artikel.includes("vacuum cleaner")
+  ){
+
+    kategorie = "🧹 Staubsauger";
+
+    preis = "ca. 30–150 €";
+
+    text =
+      "Grobe Orientierung. Marke, Modell, Zubehör und Zustand " +
+      "beeinflussen den Verkaufspreis.";
+  }
+
+
+  /*
+    AKKUSCHRAUBER / BOHRMASCHINE
+  */
+
+  else if(
+    artikel.includes("drill") ||
+    artikel.includes("power drill") ||
+    artikel.includes("tool")
+  ){
+
+    kategorie = "🔧 Bohrmaschine / Akkuschrauber";
+
+    preis = "ca. 40–120 €";
+
+    text =
+      "Grobe Orientierung. Hersteller, Akkus, Ladegerät und Zustand " +
+      "sind für den Wert entscheidend.";
+  }
+
+
+  /*
+    SPIELEKONSOLE
+  */
+
+  else if(
+    artikel.includes("game console") ||
+    artikel.includes("console") ||
+    artikel.includes("playstation")
+  ){
+
+    kategorie = "🎮 Spielekonsole";
+
+    preis = "ca. 100–450 €";
+
+    text =
+      "Grobe Orientierung. Modell, Speicher, Controller, Spiele " +
+      "und Zustand können den Preis stark verändern.";
+  }
+
+
+  document.getElementById("kategorie").innerText =
+    kategorie;
+
+  document.getElementById("preis").innerText =
+    preis;
+
+  document.getElementById("beschreibung").innerText =
+    text;
+
 }
 
-else if(artikel.includes("bosch") && artikel.includes("akk")){
-preis="ca. 50–100 €";
-text="Abhängig von Modell, Akku, Ladegerät und Zustand.";
-}
-
-else if(artikel.includes("iphone")){
-preis="ca. 300–700 €";
-text="Abhängig von Modell, Speicher und Zustand.";
-}
-
-document.getElementById("preis").innerText=preis;
-document.getElementById("beschreibung").innerText=text;
-document.getElementById("result").style.display="block";
-}
 </script>
 
 </body>
