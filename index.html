@@ -595,7 +595,7 @@ async function analysiereDatei(file){
     console.error(error);
 
     status.innerText =
-    "⚠️ Die Produkterkennung konnte nicht durchgeführt werden.";
+    "⚠️ Fehler: " + error.message;
 
     laden.style.display =
     "none";
