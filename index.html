@@ -73,19 +73,6 @@ input[type="file"]{
   margin-top:10px;
 }
 
-.check-button{
-  width:100%;
-  border:0;
-  background:#20844a;
-  color:white;
-  padding:16px;
-  border-radius:14px;
-  font-size:18px;
-  font-weight:bold;
-  margin-top:12px;
-  cursor:pointer;
-}
-
 #preview{
   width:100%;
   max-height:400px;
@@ -153,8 +140,12 @@ input[type="file"]{
   margin-bottom:8px;
 }
 
+#ocrText{
+  white-space:pre-line;
+}
+
 .fragen{
-  margin-top:15px;
+  margin-top:20px;
 }
 
 .frage{
@@ -175,14 +166,9 @@ input[type="file"]{
 </style>
 
 
-<!-- BILD-KI -->
-
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
-
-
-<!-- TEXTERKENNUNG -->
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
@@ -221,7 +207,7 @@ Was ist das wert?
 
 <p>
 Fotografiere einen Gegenstand oder füge ein Bild hinzu.
-SchnaFin versucht anschließend, den Artikel automatisch zu erkennen.
+SchnaFin versucht, den Artikel automatisch zu erkennen.
 </p>
 
 
@@ -259,7 +245,7 @@ accept="image/*">
 
 
 <!-- =================================
-     PREIS
+     ANGEBOTSPREIS
 ================================= -->
 
 <div class="box">
@@ -276,17 +262,13 @@ Was möchte der Verkäufer dafür haben?
 type="number"
 id="angebotspreis"
 class="price-input"
-placeholder="z. B. 350"
+placeholder="z. B. 350 €"
 min="0"
 step="1">
 
-<button
-class="check-button"
-onclick="preisPruefen()">
-
-🔎 Preis prüfen
-
-</button>
+<p id="preisHinweis">
+👉 Erst Artikel fotografieren, dann Angebotspreis eingeben.
+</p>
 
 </div>
 
@@ -356,7 +338,6 @@ Bitte einen Moment …
 </div>
 
 
-
 <div
 id="bewertung"
 class="bewertung">
@@ -369,21 +350,17 @@ class="bewertung">
 
 
 <!-- =================================
-     ERKANNTER TEXT
+     OCR
 ================================= -->
 
 <div class="ocr">
 
 <div class="ocr-title">
-
-🔤 Erkannter Text
-
+🔤 Erkannter Marken-/Modelltext
 </div>
 
 <div id="ocrText">
-
-Wird noch analysiert …
-
+Wird analysiert …
 </div>
 
 </div>
@@ -391,7 +368,7 @@ Wird noch analysiert …
 
 
 <!-- =================================
-     FRAGEN AN VERKÄUFER
+     FRAGEN
 ================================= -->
 
 <div class="fragen">
@@ -413,8 +390,8 @@ Noch keine Fragen verfügbar.
 <div class="hinweis">
 
 ⚠️ Die Preisbereiche sind aktuell eine
-erste Demo-Orientierung. Für eine echte Bewertung
-brauchen wir aktuelle Vergleichsangebote.
+Demo-Orientierung. Für eine echte Bewertung
+bauen wir später aktuelle Vergleichsangebote ein.
 
 </div>
 
@@ -436,15 +413,15 @@ brauchen wir aktuelle Vergleichsangebote.
    VARIABLEN
 ========================================= */
 
-let model;
+let model = null;
 
-let ocrWorker;
-
-let erkannteKategorie = "";
+let ocrWorker = null;
 
 let preisMin = 0;
 
 let preisMax = 0;
+
+let erkannterArtikel = "";
 
 
 
@@ -483,7 +460,7 @@ ladeKI();
 
 
 /* =========================================
-   DATEI ANALYSIEREN
+   FOTO ANALYSIEREN
 ========================================= */
 
 async function analysiereDatei(datei){
@@ -509,11 +486,6 @@ document.getElementById("analyse").style.display =
 document.getElementById("status").innerText =
 "🤖 SchnaFin analysiert dein Foto …";
 
-
-
-/* =====================================
-   BILD-KI
-===================================== */
 
 try{
 
@@ -549,8 +521,7 @@ document.getElementById("status").innerText =
 "Erkannt: " + erkannt;
 
 
-preisBerechnen(erkannt);
-
+artikelErkennen(erkannt);
 
 }
 
@@ -564,10 +535,7 @@ document.getElementById("status").innerText =
 }
 
 
-
-/* =====================================
-   OCR
-===================================== */
+/* OCR */
 
 await textErkennen(datei);
 
@@ -576,7 +544,7 @@ await textErkennen(datei);
 
 
 /* =========================================
-   FOTO
+   FOTO BUTTON
 ========================================= */
 
 document
@@ -585,9 +553,7 @@ document
 
 if(this.files[0]){
 
-analysiereDatei(
-this.files[0]
-);
+analysiereDatei(this.files[0]);
 
 }
 
@@ -596,7 +562,7 @@ this.files[0]
 
 
 /* =========================================
-   DATEI
+   DATEI BUTTON
 ========================================= */
 
 document
@@ -605,13 +571,420 @@ document
 
 if(this.files[0]){
 
-analysiereDatei(
-this.files[0]
-);
+analysiereDatei(this.files[0]);
 
 }
 
 };
+
+
+
+/* =========================================
+   ARTIKEL ERKENNEN
+========================================= */
+
+function artikelErkennen(artikelName){
+
+let artikel =
+artikelName.toLowerCase();
+
+
+preisMin = 0;
+
+preisMax = 0;
+
+
+/* LAPTOP */
+
+if(
+
+artikel.includes("notebook") ||
+artikel.includes("laptop") ||
+artikel.includes("computer")
+
+){
+
+erkannterArtikel =
+"Laptop / Notebook";
+
+preisMin =
+200;
+
+preisMax =
+450;
+
+}
+
+
+/* SMARTPHONE */
+
+else if(
+
+artikel.includes("cellular") ||
+artikel.includes("smartphone") ||
+artikel.includes("mobile phone") ||
+artikel.includes("iphone") ||
+artikel.includes("phone")
+
+){
+
+erkannterArtikel =
+"Smartphone";
+
+preisMin =
+150;
+
+preisMax =
+500;
+
+}
+
+
+/* KAMERA */
+
+else if(
+
+artikel.includes("camera") ||
+artikel.includes("digital camera")
+
+){
+
+erkannterArtikel =
+"Kamera";
+
+preisMin =
+100;
+
+preisMax =
+400;
+
+}
+
+
+/* STAUBSAUGER */
+
+else if(
+
+artikel.includes("vacuum") ||
+artikel.includes("vacuum cleaner")
+
+){
+
+erkannterArtikel =
+"Staubsauger";
+
+preisMin =
+30;
+
+preisMax =
+150;
+
+}
+
+
+/* BOHRMASCHINE */
+
+else if(
+
+artikel.includes("drill") ||
+artikel.includes("power drill") ||
+artikel.includes("tool")
+
+){
+
+erkannterArtikel =
+"Bohrmaschine / Akkuschrauber";
+
+preisMin =
+40;
+
+preisMax =
+120;
+
+}
+
+
+/* SPIELEKONSOLE */
+
+else if(
+
+artikel.includes("game console") ||
+artikel.includes("console") ||
+artikel.includes("playstation")
+
+){
+
+erkannterArtikel =
+"Spielekonsole";
+
+preisMin =
+100;
+
+preisMax =
+450;
+
+}
+
+
+/* DRUCKER */
+
+else if(
+
+artikel.includes("printer") ||
+artikel.includes("printer machine")
+
+){
+
+erkannterArtikel =
+"Drucker";
+
+preisMin =
+30;
+
+preisMax =
+180;
+
+}
+
+
+/* FERNSEHER */
+
+else if(
+
+artikel.includes("television") ||
+artikel.includes("tv") ||
+artikel.includes("monitor")
+
+){
+
+erkannterArtikel =
+"Fernseher / Monitor";
+
+preisMin =
+80;
+
+preisMax =
+400;
+
+}
+
+
+/* HEADSET */
+
+else if(
+
+artikel.includes("headset") ||
+artikel.includes("headphone")
+
+){
+
+erkannterArtikel =
+"Headset / Kopfhörer";
+
+preisMin =
+30;
+
+preisMax =
+200;
+
+}
+
+
+/* SONSTIGES */
+
+else{
+
+erkannterArtikel =
+"Artikel";
+
+preisMin =
+0;
+
+preisMax =
+0;
+
+}
+
+
+/* ERGEBNIS */
+
+zeigeArtikel();
+
+}
+
+
+
+/* =========================================
+   ERGEBNIS ANZEIGEN
+========================================= */
+
+function zeigeArtikel(){
+
+const kategorie =
+document.getElementById("kategorie");
+
+const preis =
+document.getElementById("preis");
+
+const beschreibung =
+document.getElementById("beschreibung");
+
+
+kategorie.innerText =
+"🏷️ " + erkannterArtikel;
+
+
+if(preisMin > 0){
+
+preis.innerText =
+"ca. " + preisMin + "–" + preisMax + " €";
+
+beschreibung.innerText =
+"Erste grobe Orientierung für gebrauchte Artikel. " +
+"Der tatsächliche Wert hängt von Modell, Zustand, " +
+"Alter und Zubehör ab.";
+
+document.getElementById("preisHinweis").innerText =
+"✅ SchnaFin hat den Artikel erkannt. Jetzt Angebotspreis eingeben.";
+
+}
+else{
+
+preis.innerText =
+"Keine Einschätzung";
+
+beschreibung.innerText =
+"SchnaFin konnte den Artikel noch nicht eindeutig einer Preisgruppe zuordnen.";
+
+document.getElementById("preisHinweis").innerText =
+"⚠️ Für diesen Artikel haben wir momentan noch keine Demo-Preisgruppe.";
+
+}
+
+
+/* FRAGEN */
+
+zeigeFragen(erkannterArtikel);
+
+
+/* Falls Preis bereits eingetragen wurde */
+
+if(
+document.getElementById("angebotspreis").value
+){
+
+preisPruefen();
+
+}
+
+}
+
+
+
+/* =========================================
+   ANGEBOTSPREIS AUTOMATISCH PRÜFEN
+========================================= */
+
+document
+.getElementById("angebotspreis")
+.addEventListener("input", function(){
+
+preisPruefen();
+
+});
+
+
+
+/* =========================================
+   FAIR / PASST / NICHT FAIR
+========================================= */
+
+function preisPruefen(){
+
+const eingabe =
+document.getElementById("angebotspreis").value;
+
+
+const bewertung =
+document.getElementById("bewertung");
+
+
+if(!eingabe){
+
+bewertung.innerText =
+"";
+
+bewertung.className =
+"bewertung";
+
+return;
+
+}
+
+
+if(
+!preisMin ||
+!preisMax
+){
+
+bewertung.innerText =
+"⏳ Für diesen Artikel haben wir noch keine Preisorientierung.";
+
+bewertung.className =
+"bewertung";
+
+return;
+
+}
+
+
+const angebot =
+parseFloat(eingabe);
+
+
+/* SEHR GÜNSTIG */
+
+if(
+angebot < preisMin * 0.85
+){
+
+bewertung.innerText =
+"🟢 FAIR – sehr guter Preis";
+
+bewertung.className =
+"bewertung fair";
+
+}
+
+
+/* NORMAL */
+
+else if(
+angebot <= preisMax
+){
+
+bewertung.innerText =
+"🟡 PASST – Preis ist okay";
+
+bewertung.className =
+"bewertung passt";
+
+}
+
+
+/* ZU TEUER */
+
+else{
+
+bewertung.innerText =
+"🔴 NICHT FAIR – zu teuer";
+
+bewertung.className =
+"bewertung nichtfair";
+
+}
+
+}
 
 
 
@@ -626,11 +999,10 @@ document.getElementById("ocrText");
 
 
 ausgabe.innerText =
-"🔤 SchnaFin liest Text auf dem Bild …";
+"🔤 Prüfe, ob ein Marken- oder Modellname erkennbar ist …";
 
 
 try{
-
 
 if(!ocrWorker){
 
@@ -649,18 +1021,15 @@ result.data.text.trim();
 
 
 /*
-   OCR aufräumen.
-
-   Wir zeigen nur Text an,
-   wenn tatsächlich sinnvolle
-   Buchstaben vorhanden sind.
+   Nur Zeilen mit mehreren
+   Buchstaben anzeigen.
 */
 
 const zeilen =
 text
 .split("\n")
 .map(x => x.trim())
-.filter(x => x.length >= 3);
+.filter(x => x.length >= 4);
 
 
 const sinnvoll =
@@ -669,28 +1038,27 @@ zeilen.filter(x => {
 const buchstaben =
 (x.match(/[A-Za-zÄÖÜäöüß]/g) || []).length;
 
-const zahlen =
-(x.match(/[0-9]/g) || []).length;
+const sonderzeichen =
+(x.match(/[^A-Za-zÄÖÜäöüß0-9\s.-]/g) || []).length;
 
 return (
-buchstaben >= 2 &&
-(buchstaben + zahlen) >= 3
+buchstaben >= 3 &&
+sonderzeichen < buchstaben
 );
 
 });
 
 
-if(sinnvoll.length > 0){
-
 /*
-   Maximal 8 Zeilen anzeigen,
-   damit die App nicht mit OCR-Müll
-   zugespammt wird.
+   Wenn OCR offensichtlich nur
+   Müll liefert, nichts anzeigen.
 */
+
+if(sinnvoll.length >= 1){
 
 ausgabe.innerText =
 sinnvoll
-.slice(0,8)
+.slice(0,5)
 .join("\n");
 
 }
@@ -698,10 +1066,9 @@ sinnvoll
 else{
 
 ausgabe.innerText =
-"Kein eindeutiger Modell- oder Markenname erkannt.";
+"Kein eindeutiger Marken- oder Modellname erkannt.";
 
 }
-
 
 }
 
@@ -710,299 +1077,7 @@ catch(error){
 console.error(error);
 
 ausgabe.innerText =
-"Texterkennung momentan nicht möglich.";
-
-}
-
-}
-
-
-
-/* =========================================
-   ARTIKEL ERKENNEN
-========================================= */
-
-function preisBerechnen(artikelName){
-
-let artikel =
-artikelName.toLowerCase();
-
-
-let kategorie =
-"Artikel";
-
-
-let preis =
-"Noch keine Einschätzung";
-
-
-let text =
-"Für diesen Artikel haben wir noch keine Vergleichsdaten.";
-
-
-preisMin =
-0;
-
-preisMax =
-0;
-
-
-
-/* =====================================
-   LAPTOP
-===================================== */
-
-if(
-
-artikel.includes("notebook") ||
-
-artikel.includes("laptop") ||
-
-artikel.includes("computer")
-
-){
-
-kategorie =
-"💻 Laptop / Notebook";
-
-
-preis =
-"ca. 200–450 €";
-
-
-preisMin =
-200;
-
-preisMax =
-450;
-
-
-text =
-"Grobe erste Orientierung für gebrauchte Laptops. " +
-"Marke, Modell, Baujahr, Prozessor, RAM, Speicher " +
-"und Zustand können den Wert deutlich verändern.";
-
-}
-
-
-
-/* =====================================
-   SMARTPHONE
-===================================== */
-
-else if(
-
-artikel.includes("cellular") ||
-
-artikel.includes("smartphone") ||
-
-artikel.includes("mobile phone") ||
-
-artikel.includes("iphone") ||
-
-artikel.includes("phone")
-
-){
-
-kategorie =
-"📱 Smartphone";
-
-
-preis =
-"ca. 150–500 €";
-
-
-preisMin =
-150;
-
-preisMax =
-500;
-
-
-text =
-"Grobe erste Orientierung. Modell, Speicher, Akku " +
-"und Zustand können den Wert deutlich verändern.";
-
-}
-
-
-
-/* =====================================
-   KAMERA
-===================================== */
-
-else if(
-
-artikel.includes("camera") ||
-
-artikel.includes("digital camera")
-
-){
-
-kategorie =
-"📷 Kamera";
-
-
-preis =
-"ca. 100–400 €";
-
-
-preisMin =
-100;
-
-preisMax =
-400;
-
-
-text =
-"Grobe Orientierung für gebrauchte Kameras. " +
-"Marke, Modell und Objektiv sind besonders wichtig.";
-
-}
-
-
-
-/* =====================================
-   STAUBSAUGER
-===================================== */
-
-else if(
-
-artikel.includes("vacuum") ||
-
-artikel.includes("vacuum cleaner")
-
-){
-
-kategorie =
-"🧹 Staubsauger";
-
-
-preis =
-"ca. 30–150 €";
-
-
-preisMin =
-30;
-
-preisMax =
-150;
-
-
-text =
-"Grobe Orientierung. Marke, Modell, Zubehör " +
-"und Zustand beeinflussen den Verkaufspreis.";
-
-}
-
-
-
-/* =====================================
-   BOHRMASCHINE
-===================================== */
-
-else if(
-
-artikel.includes("drill") ||
-
-artikel.includes("power drill") ||
-
-artikel.includes("tool")
-
-){
-
-kategorie =
-"🔧 Bohrmaschine / Akkuschrauber";
-
-
-preis =
-"ca. 40–120 €";
-
-
-preisMin =
-40;
-
-preisMax =
-120;
-
-
-text =
-"Grobe Orientierung. Hersteller, Akkus, Ladegerät " +
-"und Zustand sind für den Wert entscheidend.";
-
-}
-
-
-
-/* =====================================
-   SPIELEKONSOLE
-===================================== */
-
-else if(
-
-artikel.includes("game console") ||
-
-artikel.includes("console") ||
-
-artikel.includes("playstation")
-
-){
-
-kategorie =
-"🎮 Spielekonsole";
-
-
-preis =
-"ca. 100–450 €";
-
-
-preisMin =
-100;
-
-preisMax =
-450;
-
-
-text =
-"Grobe Orientierung. Modell, Speicher, Controller, " +
-"Spiele und Zustand können den Preis stark verändern.";
-
-}
-
-
-
-/* =====================================
-   ERGEBNIS
-===================================== */
-
-erkannteKategorie =
-kategorie;
-
-
-document.getElementById("kategorie").innerText =
-kategorie;
-
-
-document.getElementById("preis").innerText =
-preis;
-
-
-document.getElementById("beschreibung").innerText =
-text;
-
-
-/* Fragen anzeigen */
-
-zeigeFragen(kategorie);
-
-
-/* Falls bereits Preis eingegeben */
-
-if(
-document.getElementById("angebotspreis").value
-){
-
-preisPruefen();
+"Keine eindeutige Texterkennung möglich.";
 
 }
 
@@ -1023,10 +1098,7 @@ document.getElementById("fragenListe");
 let fragen = [];
 
 
-
-/* =====================================
-   LAPTOP
-===================================== */
+/* LAPTOP */
 
 if(
 kategorie.includes("Laptop")
@@ -1038,11 +1110,13 @@ fragen = [
 
 "Wie viel RAM und Speicher hat das Gerät?",
 
+"Wie alt ist das Gerät?",
+
 "Wie lange hält der Akku ungefähr?",
 
 "Gibt es Kratzer, Risse oder andere Schäden?",
 
-"Funktionieren Bildschirm, Tastatur, Touchpad und Anschlüsse einwandfrei?",
+"Funktionieren Bildschirm, Tastatur und Anschlüsse?",
 
 "Ist das originale Ladegerät dabei?",
 
@@ -1053,10 +1127,7 @@ fragen = [
 }
 
 
-
-/* =====================================
-   SMARTPHONE
-===================================== */
+/* SMARTPHONE */
 
 else if(
 kategorie.includes("Smartphone")
@@ -1066,15 +1137,15 @@ fragen = [
 
 "Welches genaue Modell und wie viel Speicher hat es?",
 
-"Wie hoch ist die Akkukapazität bzw. der Batteriezustand?",
+"Wie ist der Batteriezustand?",
 
 "Hat das Display Kratzer oder Risse?",
 
+"Wurde das Gerät bereits repariert?",
+
 "Funktionieren Kamera, Lautsprecher und Anschlüsse?",
 
-"Wurde das Smartphone bereits repariert?",
-
-"Ist das Gerät vollständig zurückgesetzt und von allen Konten abgemeldet?",
+"Ist das Gerät vollständig zurückgesetzt?",
 
 "Sind Originalverpackung und Zubehör dabei?"
 
@@ -1083,10 +1154,34 @@ fragen = [
 }
 
 
+/* DRUCKER */
 
-/* =====================================
-   KAMERA
-===================================== */
+else if(
+kategorie.includes("Drucker")
+){
+
+fragen = [
+
+"Wie lautet die genaue Marke und Modellbezeichnung?",
+
+"Funktioniert der Drucker vollständig?",
+
+"Funktionieren Drucken und Scannen einwandfrei?",
+
+"Wie voll sind die Patronen bzw. Toner?",
+
+"Sind originale Patronen oder Toner dabei?",
+
+"Gibt es Fehlermeldungen?",
+
+"Ist das originale Netzteil dabei?"
+
+];
+
+}
+
+
+/* KAMERA */
 
 else if(
 kategorie.includes("Kamera")
@@ -1098,9 +1193,9 @@ fragen = [
 
 "Wie viele Auslösungen hat die Kamera ungefähr?",
 
-"Funktionieren Objektiv, Display und Autofokus einwandfrei?",
+"Funktionieren Autofokus und Display?",
 
-"Gibt es Kratzer oder andere Schäden?",
+"Gibt es Kratzer oder Schäden?",
 
 "Welche Objektive und welches Zubehör sind dabei?",
 
@@ -1111,10 +1206,7 @@ fragen = [
 }
 
 
-
-/* =====================================
-   STAUBSAUGER
-===================================== */
+/* STAUBSAUGER */
 
 else if(
 kategorie.includes("Staubsauger")
@@ -1124,13 +1216,13 @@ fragen = [
 
 "Wie lautet die genaue Modellbezeichnung?",
 
-"Funktioniert das Gerät vollständig?",
+"Wie alt ist das Gerät?",
 
-"Wie alt ist der Staubsauger?",
+"Funktioniert es vollständig?",
 
-"Wie ist der Zustand von Akku und Ladegerät?",
+"Wie ist der Zustand des Akkus?",
 
-"Sind alle wichtigen Aufsätze und Zubehörteile dabei?",
+"Sind alle wichtigen Aufsätze dabei?",
 
 "Gibt es bekannte Defekte?"
 
@@ -1139,10 +1231,7 @@ fragen = [
 }
 
 
-
-/* =====================================
-   BOHRMASCHINE
-===================================== */
+/* AKKUSCHRAUBER */
 
 else if(
 kategorie.includes("Bohrmaschine")
@@ -1169,10 +1258,7 @@ fragen = [
 }
 
 
-
-/* =====================================
-   SPIELEKONSOLE
-===================================== */
+/* KONSOLE */
 
 else if(
 kategorie.includes("Spielekonsole")
@@ -1190,19 +1276,14 @@ fragen = [
 
 "Gibt es Kratzer oder andere Schäden?",
 
-"Sind Spiele oder weiteres Zubehör dabei?",
-
-"Gibt es eine Rechnung oder einen Kaufbeleg?"
+"Sind Spiele oder weiteres Zubehör dabei?"
 
 ];
 
 }
 
 
-
-/* =====================================
-   ALLGEMEINE FRAGEN
-===================================== */
+/* ALLGEMEIN */
 
 else{
 
@@ -1225,10 +1306,7 @@ fragen = [
 }
 
 
-
-/* =====================================
-   FRAGEN IN HTML
-===================================== */
+/* AUSGABE */
 
 liste.innerHTML =
 fragen
@@ -1236,107 +1314,6 @@ fragen
 '<div class="frage">❓ ' + frage + '</div>'
 )
 .join("");
-
-}
-
-
-
-/* =========================================
-   FAIR / PASST / NICHT FAIR
-========================================= */
-
-function preisPruefen(){
-
-const eingabe =
-document.getElementById("angebotspreis").value;
-
-
-const bewertung =
-document.getElementById("bewertung");
-
-
-if(!eingabe){
-
-bewertung.innerText =
-"Bitte zuerst den Angebotspreis eingeben.";
-
-bewertung.className =
-"bewertung";
-
-return;
-
-}
-
-
-const angebot =
-parseFloat(eingabe);
-
-
-if(
-!preisMin ||
-!preisMax
-){
-
-bewertung.innerText =
-"⏳ Bitte zuerst einen Artikel fotografieren.";
-
-bewertung.className =
-"bewertung";
-
-return;
-
-}
-
-
-/*
-   Bewertungslogik.
-
-   Unterhalb der Orientierung:
-   sehr guter Preis.
-
-   Innerhalb:
-   Preis passt.
-
-   Über der Orientierung:
-   zu teuer.
-*/
-
-
-if(
-angebot < preisMin * 0.85
-){
-
-bewertung.innerText =
-"🟢 FAIR – sehr guter Preis";
-
-bewertung.className =
-"bewertung fair";
-
-}
-
-
-else if(
-angebot <= preisMax
-){
-
-bewertung.innerText =
-"🟡 PASST – Preis ist okay";
-
-bewertung.className =
-"bewertung passt";
-
-}
-
-
-else{
-
-bewertung.innerText =
-"🔴 NICHT FAIR – zu teuer";
-
-bewertung.className =
-"bewertung nichtfair";
-
-}
 
 }
 
