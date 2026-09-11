@@ -93,14 +93,15 @@ foto.onchange = async function() {
 
   const erkannt = ergebnis[0].className;
 
-  document.getElementById("artikel").value = erkannt;
+document.getElementById("status").innerText =
+  "Erkannt: " + erkannt;
 
-  preisBerechnen();
+preisBerechnen(erkannt);
 };
 
-function preisBerechnen(){
+function preisBerechnen(artikelName){
 
-let artikel=document.getElementById("artikel").value.toLowerCase();
+let artikel=artikelName.toLowerCase();
 
 let preis="Noch keine Einschätzung";
 let text="Für diesen Artikel haben wir noch keine Vergleichsdaten.";
