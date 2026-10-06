@@ -564,10 +564,10 @@ async function analysiereDatei(file){
     if(!response.ok || !data.ok){
 
       throw new Error(
-        data.error ||
-        "Analyse fehlgeschlagen."
-      );
-
+  data.error +
+  (data.details ? ": " + data.details : "") ||
+  "Analyse fehlgeschlagen."
+);
     }
 
 
