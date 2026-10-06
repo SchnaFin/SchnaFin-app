@@ -684,11 +684,33 @@ function zeigeErgebnis(data){
   "SchnaFin hat das Foto analysiert.";
 
 
+  if(
+  Number(data.preisMin) > 0 &&
+  Number(data.preisMax) > 0
+){
+
+  preisMin = Number(data.preisMin);
+  preisMax = Number(data.preisMax);
+
+  preis.innerText =
+  "ca. " +
+  preisMin +
+  "–" +
+  preisMax +
+  " €";
+
+  preisHinweis.innerText =
+  "🌐 Aktuelle Vergleichspreise gefunden.";
+
+}else{
+
   setzePreisbereich(
     (artikel || "") +
     " " +
     (erkannteKategorie || "")
   );
+
+}
 
 
   zeigeFragen(
